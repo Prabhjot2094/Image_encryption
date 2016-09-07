@@ -1,6 +1,7 @@
 import rsa
 import binascii
 import sys
+import random
 
 
 (bob_pub, bob_priv) = rsa.newkeys(256)
@@ -79,18 +80,34 @@ def enc(dec , file_name):
 
     g = misc.imread(file_name)
     f = misc.imread(file_name)
-    if dec=='e':
+
+    width = len(f[0])
+    height = len(f)
+    
+    if (width%16)!=0:
+        padding = True
+        pad_length = width%16
+    else:
+        padding = False
+        pad_length = 0
+        
+    if dec == 'e':
         len_image_hex = 64
-        width = 2*len(f[0])
+        width = width+pad_length
+        width = 2*width
+        height = height+1
+        im = Image.new("RGB", (width, height))
     else:
         len_image_hex = 128
-        width = len(f[0])/2
-    height = len(f)
+        pad_length = f[-1][0][0]
+        print f[-1]
+        width = width/2
+        width = width-pad_length
+        height = height-1
+        im = Image.new("RGB" , (width, height))
 
     print "H,W  = ",height,width
 
-    im = Image.new("RGB", (width, height))
-    
     hex_str = ''
     i=j=prev_col=x=0
     
@@ -128,8 +145,24 @@ def enc(dec , file_name):
 #                            print prev_col
                     hex_str = ''
             j+=1
+        if padding==True:
+            for i in range(pad_length):
+                hex_val = hex(random.randrange(0,255))
+                if len(str(hex_val))==3:
+                    hex_val = hex_val[:2]+'0'+hex_val[2:]
+                hex_str += hex_val
         i+=1
         j=0
+        if i==height:
+            print "Breaking at ",i
+            break
+    if dec=='e':
+        for i in range (width):
+            if i==0:
+                im.putpixel((i,height-1),(pad_length,0,0))
+            else:
+                rand_num = random.randrange(0,255)
+                im.putpixel((i,height-1),rand_num)
 
     im.save("image_module.png")
 
@@ -142,7 +175,7 @@ def enc(dec , file_name):
 if __name__ == '__main__':
     global_var = 0
     global global_var 
-    enc('e' , "jet.jpg")
+    enc('e' , "test1.png")
     global_var = 0
     #sys.exit()
     enc('d' , "image_module.png")
