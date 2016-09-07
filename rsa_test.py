@@ -2,7 +2,7 @@ import rsa
 import binascii
 import sys
 import random
-
+import time
 
 (bob_pub, bob_priv) = rsa.newkeys(256)
 
@@ -30,21 +30,21 @@ from PIL import Image
 
 
 def format_data(hex_str):
-    global global_var 
+    #global global_var 
     hex_str = hex_str.replace("0x",'')
-    if global_var==0:
-        print hex_str
+    #if global_var==0:
+     #   print hex_str
     hex_str = binascii.unhexlify(hex_str)
     return hex_str
 #return "\x03\x04\x05\x06\x08\x09\x70\x12\x98\x82\x34\x80\x92\x38\x40\x93"
 
 def decrypt_hex(formatted_hex):
     #bob_priv = 
-    global global_var 
-    if global_var==0:
-        global_var = 1
-        print binascii.hexlify(formatted_hex)
-        print 'ft = ' , formatted_hex
+    #global global_var 
+    #if global_var==0:
+     #   global_var = 1
+      #  print binascii.hexlify(formatted_hex)
+       # print 'ft = ' , formatted_hex
     decrypted_hex = rsa.decrypt(formatted_hex,bob_priv)
     decrypted_hex = binascii.hexlify(decrypted_hex)
     rgb_arr = []
@@ -57,7 +57,7 @@ def decrypt_hex(formatted_hex):
     return rgb_arr
 
 def encrypt_hex(formatted_hex):
-    global global_var 
+   # global global_var 
     encrypted_hex = rsa.encrypt(formatted_hex,bob_pub)
     encrypted_hex = binascii.hexlify(encrypted_hex)
     rgb_arr = []
@@ -67,12 +67,12 @@ def encrypt_hex(formatted_hex):
         rgb_arr.append(int(encrypted_hex[i:i+2] , 16))
         i+=2
 
-    if global_var==0:
-        global_var = 1
-        print binascii.hexlify(formatted_hex)
-        print "Encrypted hex = " , encrypted_hex
-        print 'ft = ' , formatted_hex
-        print 'rgb = ' , rgb_arr
+    #if global_var==0:
+     #   global_var = 1
+      #  print binascii.hexlify(formatted_hex)
+       # print "Encrypted hex = " , encrypted_hex
+        #print 'ft = ' , formatted_hex
+        #print 'rgb = ' , rgb_arr
     return rgb_arr
 #return [178,117,12,32,125,32,12,0,222,13,34,222,64,24,222,222,222]
 def enc(dec , file_name):
@@ -173,9 +173,13 @@ def enc(dec , file_name):
 
 
 if __name__ == '__main__':
-    global_var = 0
-    global global_var 
+    #global_var = 0
+    #global global_var 
+    t1 = time.time()
     enc('e' , "test1.png")
-    global_var = 0
+    t2 = time.time()
+    print t2-t1
+    #global_var = 0
     #sys.exit()
     enc('d' , "image_module.png")
+    print time.time()-t2

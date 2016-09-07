@@ -4,8 +4,11 @@ import matplotlib.pyplot as plt
 import binascii
 import sys
 import random
+import rsa
 from PIL import Image
+import time
 
+(public_key, private_key) = rsa.newkeys(256)
 
 def format_data(hex_str):
     hex_str = hex_str.replace("0x",'')
@@ -13,7 +16,7 @@ def format_data(hex_str):
     return hex_str
 #return "\x03\x04\x05\x06\x08\x09\x70\x12\x98\x82\x34\x80\x92\x38\x40\x93"
 
-def decrypt_hex(formatted_hex):
+def decrypt_hex_aes(formatted_hex):
     obj = AES.new('This is a key123', AES.MODE_CBC, 'This is an IV456')
     decrypted_hex = obj.decrypt(formatted_hex)
     decrypted_hex = binascii.hexlify(decrypted_hex)
@@ -26,7 +29,7 @@ def decrypt_hex(formatted_hex):
 
     return rgb_arr
 
-def encrypt_hex(formatted_hex):
+def encrypt_hex_aes(formatted_hex):
     obj = AES.new('This is a key123', AES.MODE_CBC, 'This is an IV456')
     encrypted_hex = obj.encrypt(formatted_hex)
     encrypted_hex = binascii.hexlify(encrypted_hex)
@@ -38,9 +41,45 @@ def encrypt_hex(formatted_hex):
         i+=2
 
     return rgb_arr
+def decrypt_hex_rsa(formatted_hex):
+    #bob_priv = 
+    global global_var 
+    if global_var==0:
+        global_var = 1 
+        print binascii.hexlify(formatted_hex)
+        print 'ft = ' , formatted_hex
+    decrypted_hex = rsa.decrypt(formatted_hex,private_key)
+    decrypted_hex = binascii.hexlify(decrypted_hex)
+    rgb_arr = []
+    i=0
+
+    for x in range(16):
+        rgb_arr.append(int(decrypted_hex[i:i+2] , 16))
+        i+=2
+
+    return rgb_arr
+
+def encrypt_hex_rsa(formatted_hex):
+    global global_var 
+    encrypted_hex = rsa.encrypt(formatted_hex,public_key)
+    encrypted_hex = binascii.hexlify(encrypted_hex)
+    rgb_arr = []
+    i=0
+
+    for x in range(32):
+        rgb_arr.append(int(encrypted_hex[i:i+2] , 16))
+        i+=2
+
+    if global_var==0:
+        global_var = 1
+        print binascii.hexlify(formatted_hex)
+        print "Encrypted hex = " , encrypted_hex
+        print 'ft = ' , formatted_hex
+        print 'rgb = ' , rgb_arr
+    return rgb_arr
 #return [178,117,12,32,125,32,12,0,222,13,34,222,64,24,222,222,222]
 
-def enc(dec , file_name):
+def enc(dec , file_name ,enc_type):
 
     p_arr = [0,0,0]
 
@@ -58,14 +97,24 @@ def enc(dec , file_name):
     else:
         padding = False
         pad_length = 0
-        
+    
+    rng = 16
+    len_image_hex = 64
     if dec == 'e':
         width = width+pad_length
+        if enc_type == 'rsa':
+            rng = 32
+            len_image_hex = 64
+            width = 2*width
         height = height+1
         im = Image.new("RGB", (width, height))
     else:
         pad_length = f[-1][0][0]
         print f[-1]
+        if enc_type == 'rsa':
+            rng = 16
+            len_image_hex = 128
+            width = width/2
         width = width-pad_length
         height = height-1
         im = Image.new("RGB" , (width, height))
@@ -84,15 +133,21 @@ def enc(dec , file_name):
                     hex_val = hex_val[:2]+'0'+hex_val[2:]
 
                 hex_str += hex_val
-                if(len(hex_str)==64):
+                if(len(hex_str)==len_image_hex):
                     formatted_hex = format_data(hex_str)
 
                     if dec=='e':
-                        rgb = encrypt_hex(formatted_hex)
+                        if enc_type=='rsa':
+                            rgb = encrypt_hex_rsa(formatted_hex)
+                        else:
+                            rgb = encrypt_hex_aes(formatted_hex)
                     else:
-                        rgb = decrypt_hex(formatted_hex)
+                        if enc_type=='rsa':
+                            rgb = decrypt_hex_rsa(formatted_hex)
+                        else:
+                            rgb = decrypt_hex_aes(formatted_hex)
 
-                    for pixel in range(16):
+                    for pixel in range(rng):
                         #print "In Pixel"
                         #g[i][prev_col][x] = rgb[pixel]
                         p_arr[x] = rgb[pixel]
@@ -131,6 +186,13 @@ def enc(dec , file_name):
     print g[0][1],'\n'
 
 if __name__== '__main__':
-    enc('e' , "test1.png")
+    global_var = 0
+    global global_var
+    t1 = time.time()
+    enc('e' , "test1.png" , 'rsa')
+    t2 = time.time()
+    print t2-t1
     print "Ecnryption Complete"
-    enc('d' , "encrypt_image.png")
+    global_var = 0
+    enc('d' , "encrypt_image.png" ,'rsa')
+    print time.time()-t2
