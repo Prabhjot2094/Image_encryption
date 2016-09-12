@@ -189,10 +189,10 @@ if __name__== '__main__':
     global_var = 0
     global global_var
     t1 = time.time()
-    enc('e' , "test1.png" , 'rsa')
+    #enc('e' , "test1.png" , 'aes')
     t2 = time.time()
     print t2-t1
     print "Ecnryption Complete"
     global_var = 0
-    enc('d' , "encrypt_image.png" ,'rsa')
+    enc('d' , "encrypt_image.png" ,'aes')
     print time.time()-t2

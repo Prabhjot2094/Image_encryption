@@ -4,15 +4,16 @@ import sys
 import random
 import time
 
-(bob_pub, bob_priv) = rsa.newkeys(256)
+(bob_pub, bob_priv) = rsa.newkeys(256 , poolsize=2)
 
 #print bob_priv , '\n' , bob_pub
 
-message = '\x12\x34\x56\x78\x91\x23\x45\x67\x12\x12\x12\x12\x12\x12\x12\x12'
+message = '\x12\x34\x56\x78\x91\x23\x45\x67\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12'
 
 crypto = rsa.encrypt(message, bob_pub)
-#print len(binascii.hexlify(crypto))
-#print binascii.unhexlify(binascii.hexlify(crypto))
+print len(message)
+print len(binascii.hexlify(crypto))
+print binascii.unhexlify(binascii.hexlify(crypto))
 
 x = bob_priv
 #print x
@@ -30,10 +31,10 @@ from PIL import Image
 
 
 def format_data(hex_str):
+    #print hex_str
     #global global_var 
     hex_str = hex_str.replace("0x",'')
     #if global_var==0:
-     #   print hex_str
     hex_str = binascii.unhexlify(hex_str)
     return hex_str
 #return "\x03\x04\x05\x06\x08\x09\x70\x12\x98\x82\x34\x80\x92\x38\x40\x93"
@@ -42,22 +43,25 @@ def decrypt_hex(formatted_hex):
     #bob_priv = 
     #global global_var 
     #if global_var==0:
-     #   global_var = 1
-      #  print binascii.hexlify(formatted_hex)
-       # print 'ft = ' , formatted_hex
+        #global_var = 1
+        #print binascii.hexlify(formatted_hex)
+        #print 'ft = ' , formatted_hex
+        #print binascii.hexlify(formatted_hex)
+        #print 'ft = ' , formatted_hex
     decrypted_hex = rsa.decrypt(formatted_hex,bob_priv)
     decrypted_hex = binascii.hexlify(decrypted_hex)
     rgb_arr = []
     i=0
 
-    for x in range(16):
+    for x in range(21):
         rgb_arr.append(int(decrypted_hex[i:i+2] , 16))
         i+=2
 
     return rgb_arr
 
 def encrypt_hex(formatted_hex):
-   # global global_var 
+    test_rgb=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    global global_var 
     encrypted_hex = rsa.encrypt(formatted_hex,bob_pub)
     encrypted_hex = binascii.hexlify(encrypted_hex)
     rgb_arr = []
@@ -67,12 +71,15 @@ def encrypt_hex(formatted_hex):
         rgb_arr.append(int(encrypted_hex[i:i+2] , 16))
         i+=2
 
-    #if global_var==0:
-     #   global_var = 1
-      #  print binascii.hexlify(formatted_hex)
-       # print "Encrypted hex = " , encrypted_hex
-        #print 'ft = ' , formatted_hex
-        #print 'rgb = ' , rgb_arr
+    if global_var==0:
+        global_var = 1
+        print binascii.hexlify(formatted_hex)
+        print "Encrypted hex = " , encrypted_hex
+        print 'ft = ' , formatted_hex
+        print 'rgb = ' , rgb_arr
+    if test_rgb==rgb_arr:
+        print "Exiting"
+        sys.exit()
     return rgb_arr
 #return [178,117,12,32,125,32,12,0,222,13,34,222,64,24,222,222,222]
 def enc(dec , file_name):
@@ -84,24 +91,24 @@ def enc(dec , file_name):
     width = len(f[0])
     height = len(f)
     
-    if (width%16)!=0:
+    if (width%21)!=0:
         padding = True
-        pad_length = width%16
+        pad_length = width%21
     else:
         padding = False
         pad_length = 0
         
     if dec == 'e':
-        len_image_hex = 64
+        len_image_hex = 84
         width = width+pad_length
-        width = 2*width
+        width = 32*width/21
         height = height+1
         im = Image.new("RGB", (width, height))
     else:
         len_image_hex = 128
         pad_length = f[-1][0][0]
         print f[-1]
-        width = width/2
+        width = 21*width/32
         width = width-pad_length
         height = height-1
         im = Image.new("RGB" , (width, height))
@@ -128,12 +135,16 @@ def enc(dec , file_name):
                         rng = 32
                         rgb = encrypt_hex(formatted_hex)
                     else:
-                        rng = 16
+                        rng = 21
+                        #print i,j
+                        #if j==2570:
+                        #    print "2570 hex = " , formatted_hex
                         rgb = decrypt_hex(formatted_hex)
+                        #if j==2559:
+                        #    print "2570 rgb = " , rgb
 
 
                     for pixel in range(rng):
-                        #print "In Pixel"
                         #g[i][prev_col][x] = rgb[pixel]
                         p_arr[x] = rgb[pixel]
                         x+=1
@@ -151,6 +162,7 @@ def enc(dec , file_name):
                 if len(str(hex_val))==3:
                     hex_val = hex_val[:2]+'0'+hex_val[2:]
                 hex_str += hex_val
+
         i+=1
         j=0
         if i==height:
@@ -173,13 +185,13 @@ def enc(dec , file_name):
 
 
 if __name__ == '__main__':
-    #global_var = 0
-    #global global_var 
+    global_var = 0
+    global global_var 
     t1 = time.time()
     enc('e' , "test1.png")
     t2 = time.time()
     print t2-t1
-    #global_var = 0
+    global_var = 0
     #sys.exit()
     enc('d' , "image_module.png")
     print time.time()-t2
