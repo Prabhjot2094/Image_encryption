@@ -26,10 +26,26 @@ def calc_dim(file_size):
         x=y=t2
     return x,y
 
+def calc_dim_rsa(file_size):
+    file_size = file_size*2
+    added_bytes = file_size%3
+    t1 = file_size/3
+    t2 = pow(t1,0.5)
+    t3 = int(t2)
+
+    print "shortage = ", added_bytes
+    if t2-t3!=0:
+        x = t3+2
+        y = t3+1
+    else:
+        x=y=t2
+    return x,y
+(public_key, private_key) = rsa.newkeys(256)
+
 def enc():
     file_name = 'test4.jpg' 
     file_size = os.path.getsize(file_name)
-    width,height = calc_dim(file_size)
+    width,height = calc_dim_rsa(file_size)
 
     print width,height
     height+=1
@@ -67,19 +83,20 @@ def enc():
             if s==1 or s==2 or s==3:
                 print "Hex just before encryption = ",binascii.hexlify(z)
             obj = AES.new('aaaaaaaaaaaaaaaa', AES.MODE_CBC, 'This is an IV456')
-            encrypted_hex = obj.encrypt(z)
+            encrypted_hex = rsa.encrypt(z,public_key)
             encrypted_hex = binascii.hexlify(encrypted_hex)
-            if s==1 or s==2 or s==3:
+            if s==1 or s==2 or s==3 or final_bytes==True:
                 print "Hex after encryption = ",encrypted_hex
+                print "Hex length after encryption = ",len(encrypted_hex)
 
             rgb_arr = []
 
             t=0
     
-            for d in range(16):
+            for d in range(32):
                 rgb_arr.append(int(encrypted_hex[t:t+2] , 16))
                 t+=2
-            for pixel in range(16):
+            for pixel in range(32):
                         p_arr[x] = rgb_arr[pixel]
                         x+=1
                         if final_bytes==True:
@@ -89,7 +106,11 @@ def enc():
                                 last_pixel_row = j
                                 print last_pixel_row
                         if x>2:
-                            im.putpixel((prev_col,j),(p_arr[0],p_arr[1],p_arr[2]))
+                            try:
+                                im.putpixel((prev_col,j),(p_arr[0],p_arr[1],p_arr[2]))
+                            except:
+                                print prev_col,j
+                                sys.exit()
                             x%=3
                             prev_col = (prev_col+1)
                             i=prev_col
@@ -99,6 +120,8 @@ def enc():
                             p_arr = [0,0,0]
         if final_bytes==True:
             print p_arr
+            if p_arr!=[0,0,0]:
+                im.putpixel((prev_col,j),(p_arr[0],p_arr[1],p_arr[2]))
             break
     t2 = prev_col/256
     t3 = prev_col%256
@@ -140,21 +163,24 @@ def dec():
         rgb_arr.append(b)
         x+=3
 
-        if x>16:
-            for z in range(16):
+        if x>32:
+            for z in range(32):
                 hex_val = hex(rgb_arr.pop(0))
                 if len(str(hex_val))==3:
+                    if i==t4 and j==k3:
+                        print hex_val
                     hex_val = hex_val[:2]+'0'+hex_val[2:]
                 hex_str += hex_val 
-            x%=16
+            x%=32
             hex_str = format_data(hex_str)
             #hex_str = binascii.hexlify(hex_str)
             #rint binascii.hexlify(hex_str)
             #hex_str = binascii.unhexlify(hex_str)
-            if d==0 or d==1 or d==2:
+            if d==0 or d==1 or d==2 or (i==t4 and j==k3):
                 print "hex before decryption = ", binascii.hexlify(hex_str)
+                print "hex length before decryption = ", len(binascii.hexlify(hex_str))
             obj = AES.new('aaaaaaaaaaaaaaaa', AES.MODE_CBC, 'This is an IV456')
-            decrypted_hex = obj.decrypt(hex_str)
+            decrypted_hex = rsa.decrypt(hex_str,private_key)
             if i==t4 and j==k3:
                 f.write(decrypted_hex[:t3])
                 print "Breaking at ", i, j
@@ -162,7 +188,7 @@ def dec():
             if d==0 or d==1 or d==2:
                 d+=1
                 print "hex rigth after decryption = ", binascii.hexlify(decrypted_hex)
-            f.write(decrypted_hex)
+            f.write(decrypted_hex[:16])
             hex_str = ''
         i+=1
         if i>=width:
