@@ -285,7 +285,11 @@ def dec(enc_type , enc_file_name , dec_file_name , key):
                 obj = AES.new(key, AES.MODE_CBC, 'This is an IV456')
                 decrypted_hex = obj.decrypt(hex_str)
             elif enc_type=='rsa':
-                decrypted_hex = rsa.decrypt(hex_str,private_key)
+                try:
+                    decrypted_hex = rsa.decrypt(hex_str,private_key)
+                except:
+                    print "Wrong Key Entered !!!!!"
+                    sys.exit()
             elif enc_type=='des':
                 decrypted_hex = obj.decrypt(hex_str)
             
