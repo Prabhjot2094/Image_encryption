@@ -83,16 +83,15 @@ def get_img_ext(height , im):
     ext = binascii.unhexlify(ext_str)
     return ext
 
-(public_key, private_key) = rsa.newkeys(256 , poolsize=2)
-def enc(enc_type , file_name):
-    print public_key
-    print str(private_key.n)+'@'+str(private_key.e)+'@'+str(private_key.d)+'@'+str(private_key.p)+'@'+str(private_key.q)
+def enc(enc_type , file_name , key=''):
     if enc_type=='rsa':
+        (public_key, private_key) = rsa.newkeys(256 , poolsize=2)
+        print str(private_key.n)+'@'+str(private_key.e)+'@'+str(private_key.d)+'@'+str(private_key.p)+'@'+str(private_key.q)
         bytes_to_read = 21
         no_of_rgbs = 32
     elif enc_type=='aes' or enc_type=='des':
         if enc_type=='des':
-            obj = DES.new("DESCRYPT", DES.MODE_CBC,'\0\0\0\0\0\0\0\0')
+            obj = DES.new(key[:8], DES.MODE_CBC,'\0\0\0\0\0\0\0\0')
         bytes_to_read = 16
         no_of_rgbs = 16
 
@@ -134,7 +133,7 @@ def enc(enc_type , file_name):
             print "Hex just before encryption = ",binascii.hexlify(z)
 
         if enc_type=='aes':
-            obj = AES.new('aaaaaaaaaaaaaaaa', AES.MODE_CBC, 'This is an IV456')
+            obj = AES.new(key, AES.MODE_CBC, 'This is an IV456')
             encrypted_hex = obj.encrypt(z)
         elif enc_type=='rsa':
             encrypted_hex = rsa.encrypt(z,public_key)
@@ -216,20 +215,21 @@ def enc(enc_type , file_name):
     
     for i in range(prev_col,width):
             im.putpixel((i,height-1),(255,1,231))
-    im.save("file_image.png")
+    im.save(f_name+".png")
 
 def dec(enc_type , enc_file_name , dec_file_name , key):
-    #key = "81632813194340582635828923350547753586242834112713619671731458625212758600121||65537||29431010118801276935461888718231568730823658670796093543673282786904858263473||77185143752405439906977673500057569203371||1057623387425465967771327737562174251"
-    key = key.replace(", ","@")
-    print len(key)
-    #sys.exit()
-    key = key.split("@")
-    private_key = rsa.PrivateKey(int(key[0]),int(key[1]),int(key[2]),int(key[3]),int(key[4]))
+    if enc_type=='rsa':
+        key = key.replace(", ","@")
+        print len(key)
+        #sys.exit()
+        key = key.split("@")
+        private_key = rsa.PrivateKey(int(key[0]),int(key[1]),int(key[2]),int(key[3]),int(key[4]))
     im = Image.open(enc_file_name)
     width,height = im.size
     ext = get_img_ext(height , im)
 
     dec_file_name += ext
+    print dec_file_name
     f = open(dec_file_name,'wb')
     
     if enc_type=='rsa':
@@ -237,7 +237,7 @@ def dec(enc_type , enc_file_name , dec_file_name , key):
         no_of_rgbs = 32
     elif enc_type=='aes' or enc_type=='des':
         if enc_type == 'des':
-            obj = DES.new("DESCRYPT", DES.MODE_CBC,'\0\0\0\0\0\0\0\0')
+            obj = DES.new(key[:8], DES.MODE_CBC,'\0\0\0\0\0\0\0\0')
         bytes_to_read = 16
         no_of_rgbs = 16
 
@@ -282,7 +282,7 @@ def dec(enc_type , enc_file_name , dec_file_name , key):
                 print "hex length before decryption = ", len(binascii.hexlify(hex_str))
             
             if enc_type=='aes':
-                obj = AES.new('aaaaaaaaaaaaaaaa', AES.MODE_CBC, 'This is an IV456')
+                obj = AES.new(key, AES.MODE_CBC, 'This is an IV456')
                 decrypted_hex = obj.decrypt(hex_str)
             elif enc_type=='rsa':
                 decrypted_hex = rsa.decrypt(hex_str,private_key)
@@ -304,14 +304,27 @@ def dec(enc_type , enc_file_name , dec_file_name , key):
             j+=1
     f.close()
 
-t1 = time.time()
-enc('rsa' , "test2.jpg")
+if __name__=='__main__':
+    t1 = time.time()
 
-#enc('des' , "file_image.png")
-#print t2-t1
-priv_key = raw_input('Enter the Private Key :') 
-t2 = time.time()
-dec('rsa' ,"file_image.png" , "decrypted_image" , priv_key)
-#dec('aes' ,"file_image1.png" , "decrypted_image")
-print time.time()-t2
-sys.exit()
+    enc_dec = raw_input('Enter\ne : Encryption\nd : Decryption\n')
+
+    priv_key = ''
+    if enc_dec=='e':
+        file_name = raw_input('Enter the file name\n')
+        enc_type = raw_input('Enter the Type of Encryption: aes , des , rsa\n')
+        if enc_type!='rsa':
+            priv_key = raw_input('Enter the desired  encrytion key : \n')
+            priv_key = get_hash(priv_key)
+        enc(enc_type , file_name , priv_key)
+
+    elif enc_dec=='d':
+        file_name = raw_input('Enter the file name\n')
+        enc_type = raw_input('Enter encryption applied on the image: aes , des , rsa\n')
+        priv_key = raw_input('Enter the key : \n')
+
+        if enc_type!='rsa':
+            priv_key = get_hash(priv_key)
+        f_name = file_name.split('.')[0]
+        dec(enc_type , file_name , f_name , priv_key)
+    sys.exit()
