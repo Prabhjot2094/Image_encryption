@@ -8,6 +8,14 @@ import sys
 import binascii
 import math
 import os
+import md5
+
+def get_hash(password):
+    md = md5.new()
+    md.update(password)
+    md = md.digest()
+    hash_hex = binascii.hexlify(md)
+    return hash_hex[:16]
 
 def format_data(hex_str):
     #print hex_str
@@ -75,10 +83,10 @@ def get_img_ext(height , im):
     ext = binascii.unhexlify(ext_str)
     return ext
 
-(public_key, private_key) = rsa.newkeys(256)
+(public_key, private_key) = rsa.newkeys(256 , poolsize=2)
 def enc(enc_type , file_name):
     print public_key
-    print private_key
+    print str(private_key.n)+'@'+str(private_key.e)+'@'+str(private_key.d)+'@'+str(private_key.p)+'@'+str(private_key.q)
     if enc_type=='rsa':
         bytes_to_read = 21
         no_of_rgbs = 32
@@ -210,8 +218,13 @@ def enc(enc_type , file_name):
             im.putpixel((i,height-1),(255,1,231))
     im.save("file_image.png")
 
-def dec(enc_type , enc_file_name , dec_file_name):
-   # private_key = rsa.PrivateKey(95150004249211316623377898446877566485091194414253641389766719556945143338421, 65537, 39732825217635322062834474370137454566587906700281906704417610768193167777173, 75528358950466226404643885286786069526691, 1259791759961494151337324382202521031)
+def dec(enc_type , enc_file_name , dec_file_name , key):
+    #key = "81632813194340582635828923350547753586242834112713619671731458625212758600121||65537||29431010118801276935461888718231568730823658670796093543673282786904858263473||77185143752405439906977673500057569203371||1057623387425465967771327737562174251"
+    key = key.replace(", ","@")
+    print len(key)
+    #sys.exit()
+    key = key.split("@")
+    private_key = rsa.PrivateKey(int(key[0]),int(key[1]),int(key[2]),int(key[3]),int(key[4]))
     im = Image.open(enc_file_name)
     width,height = im.size
     ext = get_img_ext(height , im)
@@ -292,12 +305,13 @@ def dec(enc_type , enc_file_name , dec_file_name):
     f.close()
 
 t1 = time.time()
-#enc('rsa' , "test2.jpg")
+enc('rsa' , "test2.jpg")
 
 #enc('des' , "file_image.png")
-t2 = time.time()
 #print t2-t1
-dec('rsa' ,"file_image.png" , "decrypted_image")
+priv_key = raw_input('Enter the Private Key :') 
+t2 = time.time()
+dec('rsa' ,"file_image.png" , "decrypted_image" , priv_key)
 #dec('aes' ,"file_image1.png" , "decrypted_image")
 print time.time()-t2
 sys.exit()
