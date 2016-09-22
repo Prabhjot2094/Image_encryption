@@ -29,9 +29,10 @@ class MainScreen(Screen):
         super (MainScreen,self).__init__(**kwargs)
 
         box_outermost = BoxLayout(orientation = 'vertical')
-        relative_1 = BoxLayout(orientation = 'vertical' , size_hint = (1,1) , padding=(270,200,0,-50))
+        relative_1 = RelativeLayout(orientation = 'vertical' , size_hint = (1,1))# , padding=(270,150,0,0))
         
-        btn_file_name = Button(text='Select Image' , pos=(200,-10) , size_hint=(0.5,0.01))
+        btn_file_name = Button(text='Select Image' , pos=(200,0) , size_hint=(0.5,0.2))
+        btn_header_enc = Button(text='Ciphers' , pos=(50,-58) , size_hint=(0.875,0.2))
 
         box_1 = BoxLayout(orientation='horizontal',size_hint=(1,0.5),padding=(50,0))
         toggle_list = [0,0,0]
@@ -65,6 +66,7 @@ class MainScreen(Screen):
 #-------------------------------------Widgets are added----------------------------------------------------
     	
     	relative_1.add_widget(btn_file_name)
+    	relative_1.add_widget(btn_header_enc)
         
         box_1.add_widget(checkbox_1)
         box_1.add_widget(checkbox_3)
