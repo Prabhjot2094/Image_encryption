@@ -212,7 +212,7 @@ def enc(enc_type , file_name , key=''):
             print p_arr
             im.putpixel((prev_col,height-1),(p_arr[0],p_arr[1],p_arr[2]))
             prev_col+=1
-    
+    f.close() 
     for i in range(prev_col,width):
             im.putpixel((i,height-1),(255,1,231))
     im.save(f_name+".png")
@@ -224,6 +224,7 @@ def dec(enc_type , enc_file_name , dec_file_name , key):
         #sys.exit()
         key = key.split("@")
         private_key = rsa.PrivateKey(int(key[0]),int(key[1]),int(key[2]),int(key[3]),int(key[4]))
+    print enc_file_name
     im = Image.open(enc_file_name)
     width,height = im.size
     ext = get_img_ext(height , im)
@@ -307,11 +308,71 @@ def dec(enc_type , enc_file_name , dec_file_name , key):
             i%=width
             j+=1
     f.close()
+    return dec_file_name
+
+def encrypt(file_name,keys,toggle_list):
+	enc_type = ["des","rsa","aes"]
+
+	keys[0] = get_hash(keys[0]) 
+	keys[2] = get_hash(keys[2]) 
+	
+	f_name = file_name.split('.')
+
+	cnt = toggle_list.count(1)
+
+	if cnt==1:
+		pos = toggle_list.index(1)
+		enc(enc_type[pos] , file_name , keys[pos])
+	elif cnt==2:
+		pos = [i for i, x in enumerate(toggle_list) if x == 1]
+		print keys[pos[1]],keys[pos[0]]
+		print enc_type[pos[0]],enc_type[pos[1]]
+		enc(enc_type[pos[0]] , file_name ,keys[pos[0]])
+		enc(enc_type[pos[1]] , f_name[0]+'.png' , keys[pos[1]])
+	elif cnt==3:
+		pos = [0,1,2]
+		enc(enc_type[pos[0]] , file_name ,keys[pos[0]])
+		enc(enc_type[pos[1]] , f_name[0]+'.png' , keys[pos[1]])
+		enc(enc_type[pos[2]] , f_name[0]+'.png' , keys[pos[2]])
+
+def decrypt(file_name,keys,toggle_list):
+	enc_type = ["des","rsa","aes"]
+
+	keys[0] = get_hash(keys[0]) 
+	keys[2] = get_hash(keys[2]) 
+	
+	f_name = file_name.split('.')
+
+	cnt = toggle_list.count(1)
+
+	if cnt==1:
+		pos = toggle_list.index(1)
+		dec_file_name = dec(enc_type[pos] , file_name,"final" , keys[pos])
+	elif cnt==2:
+		pos = [i for i, x in enumerate(toggle_list) if x == 1]
+		print keys[pos[1]],keys[pos[0]]
+		print enc_type[pos[1]],enc_type[pos[0]]
+		dec(enc_type[pos[1]] , file_name ,"temp1"  , keys[pos[1]])
+		dec_file_name = dec(enc_type[pos[0]] , "temp1.png","final" , keys[pos[0]])
+	elif cnt==3:
+		pos = [0,1,2]
+		dec(enc_type[pos[2]] ,file_name ,"temp1", keys[2])
+		dec(enc_type[pos[1]] ,"temp1.png","temp2" , keys[1])
+		dec_file_name =dec(enc_type[pos[0]] ,"temp2.png","final", keys[0])
+	return dec_file_name
+
+
+
+
 
 if __name__=='__main__':
-    t1 = time.time()
-
-    enc_dec = raw_input('Enter\ne : Encryption\nd : Decryption\n')
+	"""t1 = time.time()
+	password = get_hash("password")
+	enc('aes' ,'test1.png' , password)
+	enc('des' ,'test1.png' , password)
+	dec('des' ,'test1.png' ,'face1' , password)
+	dec('aes' ,'face1.png' ,'fac2' , password)
+	enc_dec = raw_input('Enter\ne : Encryption\nd : Decryption\n')
 
     priv_key = ''
     if enc_dec=='e':
@@ -331,4 +392,4 @@ if __name__=='__main__':
             priv_key = get_hash(priv_key)
         f_name = file_name.split('.')[0]
         dec(enc_type , file_name , f_name , priv_key)
-    sys.exit()
+    sys.exit()"""

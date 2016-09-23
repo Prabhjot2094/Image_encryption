@@ -24,6 +24,7 @@ from functools import partial
 from kivy.uix.textinput import TextInput
 from kivy.uix.checkbox import CheckBox
 from kivy.core.window import Window
+import file_binary
 class MainScreen(Screen):
     def __init__(self,sm,**kwargs):
         super (MainScreen,self).__init__(**kwargs)
@@ -37,8 +38,8 @@ class MainScreen(Screen):
         box_1 = BoxLayout(orientation='horizontal',size_hint=(1,0.5),padding=(50,0))
         toggle_list = [0,0,0]
         checkbox_1 = Button(text="DES" ,size_hint=(1,0.4))
-        checkbox_2 = Button(text="AES",size_hint=(1,0.4))
-        checkbox_3 = Button(text="RSA",size_hint=(1,0.4))
+        checkbox_2 = Button(text="RSA",size_hint=(1,0.4))
+        checkbox_3 = Button(text="AES",size_hint=(1,0.4))
        
         Box_2 = BoxLayout(orientation='horizontal',size_hint=(1,0.5))
         box_2 = RelativeLayout(orientation='horizontal',size_hint=(1,0.15))
@@ -56,21 +57,23 @@ class MainScreen(Screen):
         #box_4 = BoxLayout(size_hint=(1,0.2))
         #btn_dummy = Button()
 #------------------------------------Binding Widgets-------------------------------------------------------
-
-        btn_file_name.bind(on_press=self.onClick)
+        file_name=['']
+        btn_file_name.bind(on_press=partial(self.onClick,file_name))
 
         checkbox_1.bind(on_press=partial(self.EncSelect,toggle_list,0,checkbox_1,box_2))
         checkbox_2.bind(on_press=partial(self.EncSelect,toggle_list,1,checkbox_2,box_2))
         checkbox_3.bind(on_press=partial(self.EncSelect,toggle_list,2,checkbox_3,box_2))
 
+        btn_enc.bind(on_press=partial(self.Encrypt,toggle_list,file_name))
+        btn_dec.bind(on_press=partial(self.Decrypt,toggle_list,file_name))
 #-------------------------------------Widgets are added----------------------------------------------------
     	
     	relative_1.add_widget(btn_file_name)
     	relative_1.add_widget(btn_header_enc)
         
         box_1.add_widget(checkbox_1)
-        box_1.add_widget(checkbox_3)
         box_1.add_widget(checkbox_2)
+        box_1.add_widget(checkbox_3)
 
         float_1.add_widget(src_img)
         float_2.add_widget(btn_enc)
@@ -94,21 +97,88 @@ class MainScreen(Screen):
 
 #-------------------------------------Responsive Functions-------------------------------------------------
 
+    def Encrypt(self,*args):
+            keys = ['','',''] 
+            children = self.children[0].children[1].children
+            for c in children:
+                if c.id=='0':
+                    keys[int(c.id)] = c.text
+                elif c.id=='2':
+                    keys[int(c.id)] = c.text
+                elif c.id=='1':
+                    keys[int(c.id)] = ' '
+            print args[1][0]
+            print keys
+            file_binary.encrypt(args[1][0] , keys ,args[0])
+
+            f_name = args[1][0].split('.')
+            self.children[0].children[0].children[0].children[0].source = f_name[0]+'.png'
+             
+    def Decrypt(self,*args):
+            keys = ['','','']
+            children = self.children[0].children[1].children
+            for c in children:
+                if c.id=='0':
+                    keys[int(c.id)] = c.text
+                elif c.id=='2':
+                    keys[int(c.id)] = c.text
+                elif c.id=='1':
+                    keys[int(c.id)] = ' '
+            print keys
+            
+            if args[0][1]==1: 
+                popup = Popup(size_hint=(0.5,0.3))
+
+                bx = BoxLayout(orientation='vertical')
+                
+                submit_key = Button(text = 'Submit',size_hint=(1,0.6))
+                rsa_key = TextInput(size_hint=(1,1))
+                
+                submit_key.bind(on_press=partial(self.onRsaText,args[0],args[1],keys,popup,rsa_key))
+                
+                bx.add_widget(rsa_key)
+                bx.add_widget(submit_key)
+                
+                popup.add_widget(bx)
+                
+                popup.open()
+            else:
+                dec_file_name = file_binary.decrypt(args[1][0] , keys ,args[0])
+                self.children[0].children[0].children[0].children[0].source = dec_file_name
+
+    def onRsaText(self,*args):
+        keys = args[2]
+        popup = args[3]
+        rsa_key = args[4]
+
+        rsa_key = rsa_key.text
+        if len(rsa_key)==0:
+            popup.dismiss()
+            return
+        print rsa_key
+        keys[1] = str(rsa_key)
+        
+        popup.dismiss()
+        
+        dec_file_name = file_binary.decrypt(args[1][0] ,keys ,args[0])
+        self.children[0].children[0].children[0].children[0].source = dec_file_name
+
     def EncSelect(self,*args):
+
         btn_no = args[1]
-        btn_pos = [54,521,287]
-        enc_type = ['Enter key for DES Encryption','Enter key for AES Encryption']
+        btn_pos = [54,287,521]
+        enc_type = ['Enter key for DES Encryption','','Enter key for AES Encryption']
         args[0][btn_no]=(args[0][btn_no]+1)%2
         
         if args[0][btn_no]==1:
             args[2].background_color=(0,0.2,0.8,1)
-            if btn_no==2:
+            if btn_no==1:
                 return
             text_input = TextInput(id=str(btn_no),hint_text=enc_type[btn_no] , pos = (btn_pos[btn_no],0) , size_hint=(0.284,1))
             args[3].add_widget(text_input)
         else:    
             args[2].background_color=(0,0,0,1)
-            if btn_no==2:
+            if btn_no==1:
                 return
             children = args[3].children
             for c in children:
@@ -119,18 +189,17 @@ class MainScreen(Screen):
 
     def onClick(self,*args):
         popup = Popup(title="Load file",size_hint=(0.9, 0.9))
-        fc = FileChooserIconView() 
+        fc = FileChooserIconView(rootpath='/home/john/projects/Image_encryption')
         popup.add_widget(fc)
         popup.open()
-        fc.bind(on_submit=partial(self.onSubmit,fc,popup))
+        fc.bind(on_submit=partial(self.onSubmit,fc,popup,args[0]))
     def onSubmit(self,*args):
-        file_name = (args[0].selection[0]).encode('utf-8')
+        print args[0].selection[0]
+        file_name = args[0].selection[0]
         args[1].dismiss()
+        args[2][0] = file_name
         
-        src_img = Image(id = 'src_img' , source = file_name , size_hint=(1,1))
-        self.children[0].children[0].add_widget(src_img)
-
-            
+        self.children[0].children[0].children[2].children[0].source = file_name
 
 
 class TestApp(App):
