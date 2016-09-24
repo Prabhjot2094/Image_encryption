@@ -34,13 +34,15 @@ class MainScreen(Screen):
     def __init__(self,sm,**kwargs):
         super (MainScreen,self).__init__(**kwargs)
 
+        self.popup_back = 'imgz/transparent2.png'
+        
         box_outermost = BoxLayout(orientation = 'vertical')
         relative_1 = RelativeLayout(orientation = 'vertical' , size_hint = (1,1))# , padding=(270,150,0,0))
         
         btn_file_name = Button(text='Select Image' , pos=(200,0) , font_size = '17sp', size_hint=(0.5,0.2),background_color=(0,0.2,0.8,1),border=(20,20,20,20))
         btn_header_enc = Button(text='Ciphers' , pos=(50,-58) , font_size = '17sp', size_hint=(0.875,0.2),background_color=(0,0.2,0.8,4),disabled=True , disabled_color=(1,1,1,1))
 
-        box_1 = BoxLayout(orientation='horizontal',size_hint=(1,0.5),padding=(50,0))
+        box_1 = BoxLayout(orientation='horizontal',size_hint=(1,0.5),padding=(50,0),spacing=(2))
         toggle_list = [0,0,0]
         checkbox_1 = Button(text="DES", font_size = '17sp',size_hint=(1,0.4),background_color=(0,0.2,0.8,0.5))
         checkbox_2 = Button(text="RSA", font_size = '17sp',size_hint=(1,0.4),background_color=(0,0.2,0.8,0.5))
@@ -60,8 +62,9 @@ class MainScreen(Screen):
         btn_dec = Button(text="Decrypt" , pos=(330,100) , size_hint=(0.6,0.2),background_color=(0,0.2,0.8,1))
     
         fl = FloatLayout()
-        background_image1 = Image(source = 'imgz/background.jpg' , allow_strech=True , size_hint=(1,1) , pos=(-200,0))
-        background_image2 = Image(source = 'imgz/background.jpg' , allow_strech=True , size_hint=(1,1) , pos=(200,0))
+        background_image1 = Image(source = 'imgz/background.jpg' , allow_strech=True , size_hint=(1,1) , pos=(-235,0))
+        background_image2 = Image(source = 'imgz/background.jpg' , allow_strech=True , size_hint=(1,1) , pos=(-2,0))
+        background_image3 = Image(source = 'imgz/background.jpg' , allow_strech=True , size_hint=(1,1) , pos=(500,0))
         #box_4 = BoxLayout(size_hint=(1,0.2))
         #btn_dummy = Button()
 #------------------------------------Binding Widgets-------------------------------------------------------
@@ -101,8 +104,9 @@ class MainScreen(Screen):
         #box_outermost.add_widget(box_4)
         box_outermost.add_widget(box_3)
         
-    	fl.add_widget(background_image1)
     	fl.add_widget(background_image2)
+    	fl.add_widget(background_image1)
+    	fl.add_widget(background_image3)
         
         self.add_widget(fl)	
     	self.add_widget(box_outermost)
@@ -110,8 +114,8 @@ class MainScreen(Screen):
 #-------------------------------------Responsive Functions-------------------------------------------------
 
     def Encrypt(self,*args):
-            popup = Popup(size_hint=(0.555,0.2))
-            bx = BoxLayout(orientation='vertical')
+            popup = Popup(background=self.popup_back,background_color = (0,0,0,0.6),title_size='17sp' , size_hint=(0.555,0.2))
+            bx = BoxLayout(orientation='vertical' , background_color=(0,0,0,1))
             popup_label = Label(size_hint=(1,1))
             
             keys = ['','',''] 
@@ -166,7 +170,7 @@ class MainScreen(Screen):
                 error_popup(error_list[0])
              
     def Decrypt(self,*args):
-            popup = Popup(size_hint=(0.555,0.2))
+            popup = Popup(background=self.popup_back,background_color = (0,0,0,0.6),title_size='17sp' , size_hint=(0.555,0.2))
             bx = BoxLayout(orientation='vertical')
             popup_label = Label(size_hint=(1,1))
             
@@ -239,7 +243,7 @@ class MainScreen(Screen):
                     self.error_popup(error_list[0])
 
     def error_popup(self,e):
-        popup = Popup(title = "Error !!" , content=Label(text=e) , size_hint=(0.5,0.5))
+        popup = Popup(background=self.popup_back,background_color = (0,0,0,0.6),title = "Error !!",title_size='17sp' , content=Label(text=e) , size_hint=(0.5,0.5))
         popup.open()
     def onRsaText(self,*args):
         keys = args[2]
