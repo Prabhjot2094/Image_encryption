@@ -39,14 +39,16 @@ class MainScreen(Screen):
         box_outermost = BoxLayout(orientation = 'vertical')
         relative_1 = RelativeLayout(orientation = 'vertical' , size_hint = (1,1))# , padding=(270,150,0,0))
         
-        btn_file_name = Button(text='Select Image' , pos=(200,0) , font_size = '17sp', size_hint=(0.5,0.2),background_color=(0,0.2,0.8,1),border=(20,20,20,20))
+        btn_file_name = Button(text='Select Image' , pos=(200,0) , font_size = '17sp', size_hint=(0.5,0.2),background_color=(0,0.2,0.8,1))
+        logo = Image(source='imgz/logo_1.png' , pos=(77,45) , size_hint=(0.8,0.8))
         btn_header_enc = Button(text='Ciphers' , pos=(50,-58) , font_size = '17sp', size_hint=(0.875,0.2),background_color=(0,0.2,0.8,4),disabled=True , disabled_color=(1,1,1,1))
 
         box_1 = BoxLayout(orientation='horizontal',size_hint=(1,0.5),padding=(50,0),spacing=(2))
         toggle_list = [0,0,0]
-        checkbox_1 = Button(text="DES", font_size = '17sp',size_hint=(1,0.4),background_color=(0,0.2,0.8,0.5))
-        checkbox_2 = Button(text="RSA", font_size = '17sp',size_hint=(1,0.4),background_color=(0,0.2,0.8,0.5))
-        checkbox_3 = Button(text="AES", font_size = '17sp',size_hint=(1,0.4),background_color=(0,0.2,0.8,0.5))
+        checkbox_1 = Button(text="DES", font_size = '17sp',size_hint=(1,0.4),background_color=(0,0.2,0.8,0.5),background_down='atlas://data/images/defaulttheme/button')
+        checkbox_2 = Button(text="RSA", font_size = '17sp',size_hint=(1,0.4),background_color=(0,0.2,0.8,0.5),background_down='atlas://data/images/defaulttheme/button')
+        checkbox_3 = Button(text="AES", font_size = '17sp',size_hint=(1,0.4),background_color=(0,0.2,0.8,0.5),background_down='atlas://data/images/defaulttheme/button')
+
        
         Box_2 = BoxLayout(orientation='horizontal',size_hint=(1,0.5))
         box_2 = RelativeLayout(orientation='horizontal',size_hint=(1,0.15))
@@ -58,8 +60,8 @@ class MainScreen(Screen):
         
         src_img = Image(id = 'src_img' , source = 'imgz/default.jpg',size_hint=(1,1))
         dest_img = Image(id = 'dest_img' , source = 'imgz/default.jpg',size=(1,1))
-        btn_enc = Button(text="Encrypt" , pos=(330,50) , size_hint=(0.6,0.2),background_color=(0,0.2,0.8,1))
-        btn_dec = Button(text="Decrypt" , pos=(330,100) , size_hint=(0.6,0.2),background_color=(0,0.2,0.8,1))
+        btn_enc = Button(text="Encrypt" , pos=(330,50) , size_hint=(0.6,0.2),background_color=(0,0.2,0.8,1),background_down='atlas://data/images/defaulttheme/button')
+        btn_dec = Button(text="Decrypt" , pos=(330,100) , size_hint=(0.6,0.2),background_color=(0,0.2,0.8,1),background_down='atlas://data/images/defaulttheme/button')
     
         fl = FloatLayout()
         background_image1 = Image(source = 'imgz/background.jpg' , allow_strech=True , size_hint=(1,1) , pos=(-235,0))
@@ -80,6 +82,7 @@ class MainScreen(Screen):
 #-------------------------------------Widgets are added----------------------------------------------------
     	
     	relative_1.add_widget(btn_file_name)
+    	relative_1.add_widget(logo)
     	relative_1.add_widget(btn_header_enc)
         
         box_1.add_widget(checkbox_1)
@@ -166,6 +169,7 @@ class MainScreen(Screen):
             if error_list[1]==1:
                 f_name = args[1][0].split('.')
                 self.children[0].children[0].children[0].children[0].source = f_name[0]+'.png'
+                self.defaultSet(args[0])
             else :
                 error_popup(error_list[0])
              
@@ -239,6 +243,8 @@ class MainScreen(Screen):
                 error_list = file_binary.decrypt(args[1][0] , keys ,args[0])
                 if error_list[1]==1:
                     self.children[0].children[0].children[0].children[0].source = error_list[0]
+                    self.defaultSet(args[0])
+
                 else:
                     self.error_popup(error_list[0])
 
@@ -263,6 +269,7 @@ class MainScreen(Screen):
         error_list = file_binary.decrypt(args[1][0] , keys ,args[0])
         if error_list[1]==1:
             self.children[0].children[0].children[0].children[0].source = error_list[0]
+            self.defaultSet(args[0])
         else:
             self.error_popup(error_list[0])
 
@@ -277,7 +284,7 @@ class MainScreen(Screen):
             args[2].background_color=(0,0.2,0.8,1)
             if btn_no==1:
                 return
-            text_input = TextInput(id=str(btn_no),hint_text=enc_type[btn_no],password=True , pos = (btn_pos[btn_no],0) , size_hint=(0.284,1))
+            text_input = TextInput(id=str(btn_no),hint_text=enc_type[btn_no],password=True , pos = (btn_pos[btn_no],0) , size_hint=(0.284,1) ,background_color=(0, 0.2, 0.8, .7),hint_text_color=(1,1,1,0.7),cursor_color=(1,1,1,1),foreground_color=(1,1,1,1), background_normal='atlas://data/images/defaulttheme/button' , background_active='atlas://data/images/defaulttheme/button')
             args[3].add_widget(text_input)
         else:    
             args[2].background_color=(0,0.2,0.8,0.5)
@@ -302,12 +309,33 @@ class MainScreen(Screen):
         args[1].dismiss()
         args[2][0] = file_name
 
-        with warnings.catch_warnings(record=True) as w:
-            print "#####################################"
-            print w
-
+        btn = self.children[0].children[3].children[1]
+        
+        if len(file_name)>42:
+            btn.font_size='15sp'
+        
+        btn.valign='middle'
+        btn.halign='center'
+        btn.text_size = (btn.width,btn.height)
+        btn.text = file_name
         self.children[0].children[0].children[2].children[0].source = file_name
         self.children[0].children[0].children[0].children[0].source = "imgz/default.jpg"
+
+    def defaultSet(self,*args):
+            self.children[0].children[3].children[1].text = "Select Image"
+            self.children[0].children[3].children[1].font_size = '17sp'
+            
+            text_inputs = self.children[0].children[1].children
+            enc_buttons = self.children[0].children[2].children
+
+            for c in text_inputs:
+                self.children[0].children[1].remove_widget(c)
+            for c in enc_buttons:
+                c.background_color=(0,0.2,0.8,0.5)
+            args[0][0] = 0
+            args[0][1] = 0
+            args[0][2] = 0
+    def getStats(self,*args):
 
 class TestApp(App):
     def build(self):
