@@ -1,3 +1,4 @@
+import json
 from PIL import Image
 from Crypto.Cipher import AES
 from Crypto.Cipher import DES
@@ -84,6 +85,7 @@ def get_img_ext(height , im):
     return ext
 
 def enc(enc_type , file_name , key=''):
+    #sys.exit(10)
     if enc_type=='rsa':
         (public_key, private_key) = rsa.newkeys(256 , poolsize=2)
         print str(private_key.n)+'@'+str(private_key.e)+'@'+str(private_key.d)+'@'+str(private_key.p)+'@'+str(private_key.q)
@@ -311,61 +313,85 @@ def dec(enc_type , enc_file_name , dec_file_name , key):
     return dec_file_name
 
 def encrypt(file_name,keys,toggle_list):
-	enc_type = ["des","rsa","aes"]
+	try:
+		enc_type = ["des","rsa","aes"]
 
-	keys[0] = get_hash(keys[0]) 
-	keys[2] = get_hash(keys[2]) 
-	
-	f_name = file_name.split('.')
+		keys[0] = get_hash(keys[0]) 
+		keys[2] = get_hash(keys[2]) 
+		
+		f_name = file_name.split('.')
 
-	cnt = toggle_list.count(1)
+		cnt = toggle_list.count(1)
 
-	if cnt==1:
-		pos = toggle_list.index(1)
-		enc(enc_type[pos] , file_name , keys[pos])
-	elif cnt==2:
-		pos = [i for i, x in enumerate(toggle_list) if x == 1]
-		print keys[pos[1]],keys[pos[0]]
-		print enc_type[pos[0]],enc_type[pos[1]]
-		enc(enc_type[pos[0]] , file_name ,keys[pos[0]])
-		enc(enc_type[pos[1]] , f_name[0]+'.png' , keys[pos[1]])
-	elif cnt==3:
-		pos = [0,1,2]
-		enc(enc_type[pos[0]] , file_name ,keys[pos[0]])
-		enc(enc_type[pos[1]] , f_name[0]+'.png' , keys[pos[1]])
-		enc(enc_type[pos[2]] , f_name[0]+'.png' , keys[pos[2]])
-
+		if cnt==1:
+			pos = toggle_list.index(1)
+			enc(enc_type[pos] , file_name , keys[pos])
+		elif cnt==2:
+			pos = [i for i, x in enumerate(toggle_list) if x == 1]
+			print keys[pos[1]],keys[pos[0]]
+			print enc_type[pos[0]],enc_type[pos[1]]
+			enc(enc_type[pos[0]] , file_name ,keys[pos[0]])
+			enc(enc_type[pos[1]] , f_name[0]+'.png' , keys[pos[1]])
+		elif cnt==3:
+			pos = [0,1,2]
+			enc(enc_type[pos[0]] , file_name ,keys[pos[0]])
+			enc(enc_type[pos[1]] , f_name[0]+'.png' , keys[pos[1]])
+			enc(enc_type[pos[2]] , f_name[0]+'.png' , keys[pos[2]])
+		return ["",1]
+	except Exception as e:
+		return [e[0],0]
 def decrypt(file_name,keys,toggle_list):
-	enc_type = ["des","rsa","aes"]
+	try:
+		enc_type = ["des","rsa","aes"]
 
-	keys[0] = get_hash(keys[0]) 
-	keys[2] = get_hash(keys[2]) 
-	
-	f_name = file_name.split('.')
+		keys[0] = get_hash(keys[0]) 
+		keys[2] = get_hash(keys[2]) 
+		
+		f_name = file_name.split('.')
 
-	cnt = toggle_list.count(1)
+		cnt = toggle_list.count(1)
 
-	if cnt==1:
-		pos = toggle_list.index(1)
-		dec_file_name = dec(enc_type[pos] , file_name,"final" , keys[pos])
-	elif cnt==2:
-		pos = [i for i, x in enumerate(toggle_list) if x == 1]
-		print keys[pos[1]],keys[pos[0]]
-		print enc_type[pos[1]],enc_type[pos[0]]
-		dec(enc_type[pos[1]] , file_name ,"temp1"  , keys[pos[1]])
-		dec_file_name = dec(enc_type[pos[0]] , "temp1.png","final" , keys[pos[0]])
-	elif cnt==3:
-		pos = [0,1,2]
-		dec(enc_type[pos[2]] ,file_name ,"temp1", keys[2])
-		dec(enc_type[pos[1]] ,"temp1.png","temp2" , keys[1])
-		dec_file_name =dec(enc_type[pos[0]] ,"temp2.png","final", keys[0])
-	return dec_file_name
+		if cnt==1:
+			pos = toggle_list.index(1)
+			dec_file_name = dec(enc_type[pos] , file_name,"final" , keys[pos])
+		elif cnt==2:
+			pos = [i for i, x in enumerate(toggle_list) if x == 1]
+			print keys[pos[1]],keys[pos[0]]
+			print enc_type[pos[1]],enc_type[pos[0]]
+			dec(enc_type[pos[1]] , file_name ,"temp1"  , keys[pos[1]])
+			dec_file_name = dec(enc_type[pos[0]] , "temp1.png","final" , keys[pos[0]])
+		elif cnt==3:
+			pos = [0,1,2]
+			dec(enc_type[pos[2]] ,file_name ,"temp1", keys[2])
+			dec(enc_type[pos[1]] ,"temp1.png","temp2" , keys[1])
+			dec_file_name =dec(enc_type[pos[0]] ,"temp2.png","final", keys[0])
+		return [dec_file_name,1]
+	except Exception as e:
+		rsa_error = "invalid literal for"
+		temp = rsa_error in str(e)
+		
+		if temp == True:
+			return ["Invalid Private key for RSA !!",0]
+		else:
+			return [e[0],0]
+def main(argv):
+	argv = argv[0].split('#')
+	print argv[0]
+	print str(argv)
 
-
-
+	for i in range(2,4):
+		print i,argv[i]
+		argv[i]=json.loads(argv[i])
+	if argv[0]=="encrypt":
+		encrypt(argv[1],argv[2],argv[3])
+	elif argv[0]=="decrypt":
+		file_name = decrypt(argv[1],argv[2],argv[3])
+		return file_name
 
 
 if __name__=='__main__':
+	if sys.argv[1:]:
+		main(sys.argv[1:])
 	"""t1 = time.time()
 	password = get_hash("password")
 	enc('aes' ,'test1.png' , password)

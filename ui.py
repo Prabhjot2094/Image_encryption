@@ -1,3 +1,6 @@
+import subprocess
+import sys
+import warnings
 from kivy.config import Config
 Config.set('graphics','resizable',0)
 from kivy.app import App
@@ -25,6 +28,8 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.checkbox import CheckBox
 from kivy.core.window import Window
 import file_binary
+import json
+
 class MainScreen(Screen):
     def __init__(self,sm,**kwargs):
         super (MainScreen,self).__init__(**kwargs)
@@ -51,8 +56,8 @@ class MainScreen(Screen):
         
         src_img = Image(id = 'src_img' , source = 'imgz/default.jpg',size_hint=(1,1))
         dest_img = Image(id = 'dest_img' , source = 'imgz/default.jpg',size=(1,1))
-        btn_enc = Button(text="Encrypt" , pos=(330,20) , size_hint=(0.6,0.2),background_color=(0,0.2,0.8,1))
-        btn_dec = Button(text="Decrypt" , pos=(330,110) , size_hint=(0.6,0.2),background_color=(0,0.2,0.8,1))
+        btn_enc = Button(text="Encrypt" , pos=(330,50) , size_hint=(0.6,0.2),background_color=(0,0.2,0.8,1))
+        btn_dec = Button(text="Decrypt" , pos=(330,100) , size_hint=(0.6,0.2),background_color=(0,0.2,0.8,1))
     
         fl = FloatLayout()
         background_image1 = Image(source = 'imgz/background.jpg' , allow_strech=True , size_hint=(1,1) , pos=(-200,0))
@@ -150,10 +155,15 @@ class MainScreen(Screen):
                     popup.add_widget(bx)
                     popup.open()
                     return
-            file_binary.encrypt(args[1][0] , keys ,args[0])
+            #print "python file_binary.py 'encrypt#" +args[1][0]+ "#" + json.dumps(keys) + "#" + json.dumps(args[0])+"'"
+            #os.system("python file_binary.py 'encrypt#"+args[1][0]+ "#" + json.dumps(keys) + "#" + json.dumps(args[0])+"'")
+            error_list = file_binary.encrypt(args[1][0] , keys ,args[0])
 
-            f_name = args[1][0].split('.')
-            self.children[0].children[0].children[0].children[0].source = f_name[0]+'.png'
+            if error_list[1]==1:
+                f_name = args[1][0].split('.')
+                self.children[0].children[0].children[0].children[0].source = f_name[0]+'.png'
+            else :
+                error_popup(error_list[0])
              
     def Decrypt(self,*args):
             popup = Popup(size_hint=(0.555,0.2))
@@ -219,9 +229,18 @@ class MainScreen(Screen):
                 
                 popup.open()
             else:
-                dec_file_name = file_binary.decrypt(args[1][0] , keys ,args[0])
-                self.children[0].children[0].children[0].children[0].source = dec_file_name
+                #dec_file_name = subprocess.check_output([sys.executable, "file_bianry.py","'decrypt#"+args[1][0]+ "#" + json.dumps(keys) + "#" + json.dumps(args[0])+"'" ])
+                #dec_file_name = os.system("python file_binary.py 'decrypt#"+args[1][0]+ "#" + json.dumps(keys) + "#" + json.dumps(args[0])+"'")
+                #print "dec_file_name =",dec_file_name
+                error_list = file_binary.decrypt(args[1][0] , keys ,args[0])
+                if error_list[1]==1:
+                    self.children[0].children[0].children[0].children[0].source = error_list[0]
+                else:
+                    self.error_popup(error_list[0])
 
+    def error_popup(self,e):
+        popup = Popup(title = "Error !!" , content=Label(text=e) , size_hint=(0.5,0.5))
+        popup.open()
     def onRsaText(self,*args):
         keys = args[2]
         popup = args[3]
@@ -236,8 +255,12 @@ class MainScreen(Screen):
         
         popup.dismiss()
         
-        dec_file_name = file_binary.decrypt(args[1][0] ,keys ,args[0])
-        self.children[0].children[0].children[0].children[0].source = dec_file_name
+        #dec_file_name = os.system("python file_binary.py 'decrypt#"+args[1][0]+ "#" + json.dumps(keys) + "#" + json.dumps(args[0])+"'")
+        error_list = file_binary.decrypt(args[1][0] , keys ,args[0])
+        if error_list[1]==1:
+            self.children[0].children[0].children[0].children[0].source = error_list[0]
+        else:
+            self.error_popup(error_list[0])
 
     def EncSelect(self,*args):
 
@@ -274,10 +297,13 @@ class MainScreen(Screen):
         file_name = args[0].selection[0]
         args[1].dismiss()
         args[2][0] = file_name
-        
+
+        with warnings.catch_warnings(record=True) as w:
+            print "#####################################"
+            print w
+
         self.children[0].children[0].children[2].children[0].source = file_name
         self.children[0].children[0].children[0].children[0].source = "imgz/default.jpg"
-
 
 class TestApp(App):
     def build(self):
