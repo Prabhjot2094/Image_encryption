@@ -32,14 +32,14 @@ class MainScreen(Screen):
         box_outermost = BoxLayout(orientation = 'vertical')
         relative_1 = RelativeLayout(orientation = 'vertical' , size_hint = (1,1))# , padding=(270,150,0,0))
         
-        btn_file_name = Button(text='Select Image' , pos=(200,0) , size_hint=(0.5,0.2))
-        btn_header_enc = Button(text='Ciphers' , pos=(50,-58) , size_hint=(0.875,0.2))
+        btn_file_name = Button(text='Select Image' , pos=(200,0) , font_size = '17sp', size_hint=(0.5,0.2),background_color=(0,0.2,0.8,1),border=(20,20,20,20))
+        btn_header_enc = Button(text='Ciphers' , pos=(50,-58) , font_size = '17sp', size_hint=(0.875,0.2),background_color=(0,0.2,0.8,4),disabled=True , disabled_color=(1,1,1,1))
 
         box_1 = BoxLayout(orientation='horizontal',size_hint=(1,0.5),padding=(50,0))
         toggle_list = [0,0,0]
-        checkbox_1 = Button(text="DES" ,size_hint=(1,0.4))
-        checkbox_2 = Button(text="RSA",size_hint=(1,0.4))
-        checkbox_3 = Button(text="AES",size_hint=(1,0.4))
+        checkbox_1 = Button(text="DES", font_size = '17sp',size_hint=(1,0.4),background_color=(0,0.2,0.8,0.5))
+        checkbox_2 = Button(text="RSA", font_size = '17sp',size_hint=(1,0.4),background_color=(0,0.2,0.8,0.5))
+        checkbox_3 = Button(text="AES", font_size = '17sp',size_hint=(1,0.4),background_color=(0,0.2,0.8,0.5))
        
         Box_2 = BoxLayout(orientation='horizontal',size_hint=(1,0.5))
         box_2 = RelativeLayout(orientation='horizontal',size_hint=(1,0.15))
@@ -49,11 +49,14 @@ class MainScreen(Screen):
         float_2 = FloatLayout()
         float_3 = BoxLayout()
         
-        src_img = Image(id = 'src_img' , source = 'file_image1.png',size_hint=(1,1))
-        dest_img = Image(id = 'dest_img' , source = 'test1.png',size=(1,1))
-        btn_enc = Button(text="Encrypt" , pos=(330,20) , size_hint=(0.6,0.2))
-        btn_dec = Button(text="Decrypt" , pos=(330,110) , size_hint=(0.6,0.2))
+        src_img = Image(id = 'src_img' , source = 'imgz/default.jpg',size_hint=(1,1))
+        dest_img = Image(id = 'dest_img' , source = 'imgz/default.jpg',size=(1,1))
+        btn_enc = Button(text="Encrypt" , pos=(330,20) , size_hint=(0.6,0.2),background_color=(0,0.2,0.8,1))
+        btn_dec = Button(text="Decrypt" , pos=(330,110) , size_hint=(0.6,0.2),background_color=(0,0.2,0.8,1))
     
+        fl = FloatLayout()
+        background_image1 = Image(source = 'imgz/background.jpg' , allow_strech=True , size_hint=(1,1) , pos=(-200,0))
+        background_image2 = Image(source = 'imgz/background.jpg' , allow_strech=True , size_hint=(1,1) , pos=(200,0))
         #box_4 = BoxLayout(size_hint=(1,0.2))
         #btn_dummy = Button()
 #------------------------------------Binding Widgets-------------------------------------------------------
@@ -92,47 +95,120 @@ class MainScreen(Screen):
         box_outermost.add_widget(box_2)
         #box_outermost.add_widget(box_4)
         box_outermost.add_widget(box_3)
-
+        
+    	fl.add_widget(background_image1)
+    	fl.add_widget(background_image2)
+        
+        self.add_widget(fl)	
     	self.add_widget(box_outermost)
 
 #-------------------------------------Responsive Functions-------------------------------------------------
 
     def Encrypt(self,*args):
+            popup = Popup(size_hint=(0.555,0.2))
+            bx = BoxLayout(orientation='vertical')
+            popup_label = Label(size_hint=(1,1))
+            
             keys = ['','',''] 
             children = self.children[0].children[1].children
+            
+            if len(args[1][0])==0:
+                popup.size_hint = (0.225,0.2)
+                popup.title = "Error !!" 
+                popup_label.text="Please select a file !!"
+                bx.add_widget(popup_label)
+                popup.add_widget(bx)
+                popup.open()
+                return
+
             for c in children:
                 if c.id=='0':
+                    if c.text=='':
+                        popup.title = "Error !!" 
+                        popup_label.text="Please Enter a password for Des encryption OR deselect it !!"
+                        bx.add_widget(popup_label)
+                        popup.add_widget(bx)
+                        popup.open()
+                        return
                     keys[int(c.id)] = c.text
                 elif c.id=='2':
+                    if c.text=='':
+                        popup.title = "Error !!" 
+                        popup_label.text="Please Enter a password for Aes encryption OR deselect it !!"
+                        bx.add_widget(popup_label)
+                        popup.add_widget(bx)
+                        popup.open()
+                        return
                     keys[int(c.id)] = c.text
                 elif c.id=='1':
                     keys[int(c.id)] = ' '
-            print args[1][0]
-            print keys
+            if args[0].count(1)==0:
+                    popup.title = "Error !!" 
+                    popup.size_hint = (0.34,0.2)
+                    popup_label.text = "Please Select atleast one Cipher !!"
+                    bx.add_widget(popup_label)
+                    popup.add_widget(bx)
+                    popup.open()
+                    return
             file_binary.encrypt(args[1][0] , keys ,args[0])
 
             f_name = args[1][0].split('.')
             self.children[0].children[0].children[0].children[0].source = f_name[0]+'.png'
              
     def Decrypt(self,*args):
+            popup = Popup(size_hint=(0.555,0.2))
+            bx = BoxLayout(orientation='vertical')
+            popup_label = Label(size_hint=(1,1))
+            
             keys = ['','','']
             children = self.children[0].children[1].children
+            
+            if len(args[1][0])==0:
+                    popup.size_hint = (0.225,0.2)
+                    popup.title = "Error !!" 
+                    popup_label.text="Please select a file !!"
+                    bx.add_widget(popup_label)
+                    popup.add_widget(bx)
+                    popup.open()
+                    return
+
             for c in children:
                 if c.id=='0':
+                    if c.text=='':
+                        popup.title = "Error !!" 
+                        popup_label.text="Please Enter a password for Des encryption OR deselect it !!"
+                        bx.add_widget(popup_label)
+                        popup.add_widget(bx)
+                        popup.open()
+                        return
                     keys[int(c.id)] = c.text
                 elif c.id=='2':
+                    if c.text=='':
+                        popup.title = "Error !!" 
+                        popup_label.text="Please Enter a password for Aes encryption OR deselect it !!"
+                        bx.add_widget(popup_label)
+                        popup.add_widget(bx)
+                        popup.open()
+                        return
                     keys[int(c.id)] = c.text
                 elif c.id=='1':
                     keys[int(c.id)] = ' '
-            print keys
+            if args[0].count(1)==0:
+                    popup.title = "Error !!" 
+                    popup.size_hint = (0.34,0.2)
+                    popup_label.text = "Please Select atleast one Cipher !!"
+                    bx.add_widget(popup_label)
+                    popup.add_widget(bx)
+                    popup.open()
+                    return
             
             if args[0][1]==1: 
-                popup = Popup(size_hint=(0.5,0.3))
+                popup = Popup(title = "Private Key" , size_hint=(0.5,0.3))
 
                 bx = BoxLayout(orientation='vertical')
                 
-                submit_key = Button(text = 'Submit',size_hint=(1,0.6))
-                rsa_key = TextInput(size_hint=(1,1))
+                submit_key = Button( text = 'Submit',size_hint=(1,0.6))
+                rsa_key = TextInput(hint_text = "Enter Your Private Key" ,password=True, size_hint=(1,1))
                 
                 submit_key.bind(on_press=partial(self.onRsaText,args[0],args[1],keys,popup,rsa_key))
                 
@@ -174,10 +250,10 @@ class MainScreen(Screen):
             args[2].background_color=(0,0.2,0.8,1)
             if btn_no==1:
                 return
-            text_input = TextInput(id=str(btn_no),hint_text=enc_type[btn_no] , pos = (btn_pos[btn_no],0) , size_hint=(0.284,1))
+            text_input = TextInput(id=str(btn_no),hint_text=enc_type[btn_no],password=True , pos = (btn_pos[btn_no],0) , size_hint=(0.284,1))
             args[3].add_widget(text_input)
         else:    
-            args[2].background_color=(0,0,0,1)
+            args[2].background_color=(0,0.2,0.8,0.5)
             if btn_no==1:
                 return
             children = args[3].children
@@ -200,12 +276,13 @@ class MainScreen(Screen):
         args[2][0] = file_name
         
         self.children[0].children[0].children[2].children[0].source = file_name
+        self.children[0].children[0].children[0].children[0].source = "imgz/default.jpg"
 
 
 class TestApp(App):
     def build(self):
         Window.size = (800, 500)
-        Window.clearcolor = (1, 1, 1, 1)
+        #Window.clearcolor = (1, 1, 1, 1)
 
         sm = ScreenManager()
         
