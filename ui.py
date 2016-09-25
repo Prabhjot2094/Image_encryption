@@ -180,7 +180,7 @@ class MainScreen(Screen):
                 self.error_popup(error_list[0])
              
     def Decrypt(self,*args):
-            popup = Popup(background=self.popup_back,background_color = (0,0,0,0.6),title_size='17sp' , size_hint=(0.555,0.2))
+            popup = Popup(background=self.popup_back,background_color = (0,0,0,0.6),title_size='17sp',separator_color=(1,1,1,0.7) , size_hint=(0.555,0.2))
             bx = BoxLayout(orientation='vertical')
             popup_label = Label(size_hint=(1,1))
             
@@ -227,7 +227,7 @@ class MainScreen(Screen):
                     return
             
             if args[0][1]==1: 
-                popup = Popup(background=self.popup_back,background_color = (0,0,0,0.6),title = "Private Key" , size_hint=(0.28,0.5))
+                popup = Popup(background=self.popup_back,background_color = (0,0,0,0.6),title = "Private Key",title_size='17sp', size_hint=(0.28,0.5),separator_color=(1,1,1,0.7))
 
                 bx = BoxLayout(orientation='vertical')
                 
@@ -256,7 +256,7 @@ class MainScreen(Screen):
                     self.error_popup(error_list[0])
 
     def error_popup(self,e):
-        popup = Popup(background=self.popup_back,background_color = (0,0,0,0.6),title = "Error !!",title_size='17sp' , content=Label(text=e) , size_hint=(0.5,0.5))
+        popup = Popup(background=self.popup_back,background_color = (0,0,0,0.6),title = "Error !!",title_size='17sp',separator_color=(1,1,1,0.7) , content=Label(text=e) , size_hint=(0.5,0.5))
         popup.open()
     def onRsaText(self,*args):
         keys = args[2]
@@ -307,8 +307,8 @@ class MainScreen(Screen):
         print args[0]
 
     def onClick(self,*args):
-        popup = Popup(title="Load file",size_hint=(0.9, 0.9))
-        fc = FileChooserIconView(rootpath='/home/john/projects/Image_encryption')
+        popup = Popup(background='imgz/back_blue_1.jpg',background_color = (0,0,0,0.6),title_size='17sp' ,title="Load file",size_hint=(0.8, 0.8),separator_color=(1,1,1,0.7))
+        fc = FileChooserIconView(path='/home/john/projects/Image_encryption')
         popup.add_widget(fc)
         popup.open()
         fc.bind(on_submit=partial(self.onSubmit,fc,popup,args[0]))
@@ -380,13 +380,13 @@ class MainScreen(Screen):
 
 
 
-        popup = Popup(background=self.popup_back,background_color = (0,0,0,0.6),title_size='17sp' ,title="Stats" , size_hint=(0.4,0.65))
+        popup = Popup(background=self.popup_back,background_color = (0,0,0,0.6),title_size='17sp' ,title="Stats" , size_hint=(0.4,0.65),separator_color=(1,1,1,0.7))
         label = Label(text=to_disp)
         popup.add_widget(label)
         popup.open()
     
     def displayRsa(self,*args):
-        popup = Popup(title="Private Key for RSA",background=self.popup_back,background_color = (0,0,0,0.6),size_hint = (0.32,0.6),title_size='17sp')
+        popup = Popup(title="Private Key for RSA",background=self.popup_back,background_color = (0,0,0,0.6),size_hint = (0.32,0.6),title_size='17sp',separator_color=(1,1,1,0.7))
         bx = BoxLayout(orientation='vertical')
         btn_copy = Button(text="Copy",background_down=self.popup_back,background_color=(0,0.2,0.8,100),color=(1,1,1,1),size_hint=(1,0.2))
 
