@@ -88,7 +88,7 @@ def enc(enc_type , file_name , key=''):
     #sys.exit(10)
     if enc_type=='rsa':
         (public_key, private_key) = rsa.newkeys(256 , poolsize=2)
-        print str(private_key.n)+'@'+str(private_key.e)+'@'+str(private_key.d)+'@'+str(private_key.p)+'@'+str(private_key.q)
+        priv_key = str(private_key.n)+'@'+str(private_key.e)+'@'+str(private_key.d)+'@'+str(private_key.p)+'@'+str(private_key.q)
         bytes_to_read = 21
         no_of_rgbs = 32
     elif enc_type=='aes' or enc_type=='des':
@@ -218,6 +218,9 @@ def enc(enc_type , file_name , key=''):
     for i in range(prev_col,width):
             im.putpixel((i,height-1),(255,1,231))
     im.save(f_name+".png")
+    if enc_type=='rsa':
+		return priv_key
+    
 
 def dec(enc_type , enc_file_name , dec_file_name , key):
     if enc_type=='rsa':
@@ -323,21 +326,41 @@ def encrypt(file_name,keys,toggle_list):
 
 		cnt = toggle_list.count(1)
 
+		t1=time.time()
 		if cnt==1:
 			pos = toggle_list.index(1)
-			enc(enc_type[pos] , file_name , keys[pos])
+			t1=time.time()
+			rsa = enc(enc_type[pos] , file_name , keys[pos])
+			t2=time.time()
+			time_taken=[t2-t1,t2-t1]
 		elif cnt==2:
 			pos = [i for i, x in enumerate(toggle_list) if x == 1]
 			print keys[pos[1]],keys[pos[0]]
 			print enc_type[pos[0]],enc_type[pos[1]]
-			enc(enc_type[pos[0]] , file_name ,keys[pos[0]])
-			enc(enc_type[pos[1]] , f_name[0]+'.png' , keys[pos[1]])
+			t1=time.time()
+			r1 = enc(enc_type[pos[0]] , file_name ,keys[pos[0]])
+			t2=time.time()
+			r2 = enc(enc_type[pos[1]] , f_name[0]+'.png' , keys[pos[1]])
+			t3=time.time()
+			
+			if pos[1]==1:
+				rsa=r1
+			elif pos[0]==1:
+				rsa=r2
+			time_taken=[t2-t1,t3-t2,t3-t1]
 		elif cnt==3:
 			pos = [0,1,2]
+			t1=time.time()
 			enc(enc_type[pos[0]] , file_name ,keys[pos[0]])
-			enc(enc_type[pos[1]] , f_name[0]+'.png' , keys[pos[1]])
+			t2=time.time()
+			rsa = enc(enc_type[pos[1]] , f_name[0]+'.png' , keys[pos[1]])
+			t3=time.time()
 			enc(enc_type[pos[2]] , f_name[0]+'.png' , keys[pos[2]])
-		return ["",1]
+			t4=time.time()
+			
+			time_taken=[t2-t1,t3-t2,t4-t3,t4-t1]
+		print rsa
+		return [rsa,1,time_taken]
 	except Exception as e:
 		return [e[0],0]
 def decrypt(file_name,keys,toggle_list):
@@ -351,21 +374,37 @@ def decrypt(file_name,keys,toggle_list):
 
 		cnt = toggle_list.count(1)
 
+		
 		if cnt==1:
 			pos = toggle_list.index(1)
+			t1=time.time()
 			dec_file_name = dec(enc_type[pos] , file_name,"final" , keys[pos])
+			t2=time.time()
+
+			time_taken = [t2-t1,t2-t1]
 		elif cnt==2:
 			pos = [i for i, x in enumerate(toggle_list) if x == 1]
 			print keys[pos[1]],keys[pos[0]]
-			print enc_type[pos[1]],enc_type[pos[0]]
+			print enc_type[pos[1]],enc_type[pos[0]]	
+			t1=time.time()
 			dec(enc_type[pos[1]] , file_name ,"temp1"  , keys[pos[1]])
+			t2=time.time()
 			dec_file_name = dec(enc_type[pos[0]] , "temp1.png","final" , keys[pos[0]])
+			t3=time.time()
+
+			time_taken=[t2-t1,t3-t2,t3-t1]
 		elif cnt==3:
 			pos = [0,1,2]
+			t1=time.time()
 			dec(enc_type[pos[2]] ,file_name ,"temp1", keys[2])
+			t2=time.time()
 			dec(enc_type[pos[1]] ,"temp1.png","temp2" , keys[1])
+			t3=time.time()
 			dec_file_name =dec(enc_type[pos[0]] ,"temp2.png","final", keys[0])
-		return [dec_file_name,1]
+			t4=time.time()
+			
+			time_taken=[t2-t1,t3-t2,t4-t3,t4-t1]
+		return [dec_file_name,1,time_taken]
 	except Exception as e:
 		rsa_error = "invalid literal for"
 		temp = rsa_error in str(e)
