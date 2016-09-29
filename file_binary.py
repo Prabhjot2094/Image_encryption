@@ -29,7 +29,7 @@ def calc_dim(file_size , enc_type):
     if enc_type=='rsa':
         file_size = file_size*32/21
     added_bytes = file_size%3
-    t1 = file_size/3
+    t1 = file_size/3.0
     t2 = pow(t1,0.5)
     t3 = int(t2)
 
@@ -38,7 +38,7 @@ def calc_dim(file_size , enc_type):
         x = t3+2
         y = t3+1
     else:
-        x=y=t2
+        x=y=int(t2)
     return x,y
 
 def calc_dim_rsa(file_size):
@@ -378,7 +378,7 @@ def decrypt(file_name,keys,toggle_list):
 		if cnt==1:
 			pos = toggle_list.index(1)
 			t1=time.time()
-			dec_file_name = dec(enc_type[pos] , file_name,"final" , keys[pos])
+			dec_file_name = dec(enc_type[pos] , file_name, f_name[0] , keys[pos])
 			t2=time.time()
 
 			time_taken = [t2-t1,t2-t1]
@@ -386,12 +386,14 @@ def decrypt(file_name,keys,toggle_list):
 			pos = [i for i, x in enumerate(toggle_list) if x == 1]
 			print keys[pos[1]],keys[pos[0]]
 			print enc_type[pos[1]],enc_type[pos[0]]	
+			
 			t1=time.time()
 			dec(enc_type[pos[1]] , file_name ,"temp1"  , keys[pos[1]])
 			t2=time.time()
-			dec_file_name = dec(enc_type[pos[0]] , "temp1.png","final" , keys[pos[0]])
+			dec_file_name = dec(enc_type[pos[0]] , "temp1.png", f_name[0] , keys[pos[0]])
 			t3=time.time()
 
+                        os.remove("temp1.png")
 			time_taken=[t2-t1,t3-t2,t3-t1]
 		elif cnt==3:
 			pos = [0,1,2]
@@ -400,9 +402,11 @@ def decrypt(file_name,keys,toggle_list):
 			t2=time.time()
 			dec(enc_type[pos[1]] ,"temp1.png","temp2" , keys[1])
 			t3=time.time()
-			dec_file_name =dec(enc_type[pos[0]] ,"temp2.png","final", keys[0])
+			dec_file_name =dec(enc_type[pos[0]] ,"temp2.png", f_name[0], keys[0])
 			t4=time.time()
 			
+			os.remove("temp1.png")
+			os.remove("temp2.png")
 			time_taken=[t2-t1,t3-t2,t4-t3,t4-t1]
 		return [dec_file_name,1,time_taken]
 	except Exception as e:

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import math
 import subprocess
 import sys
@@ -285,7 +287,7 @@ class MainScreen(Screen):
     def EncSelect(self,*args):
 
         btn_no = args[1]
-        btn_pos = [54,287,521]
+        btn_pos = [50,287,518]
         enc_type = ['Enter key for DES Encryption','','Enter key for AES Encryption']
         args[0][btn_no]=(args[0][btn_no]+1)%2
         
@@ -293,7 +295,7 @@ class MainScreen(Screen):
             args[2].background_color=(0,0.2,0.8,1)
             if btn_no==1:
                 return
-            text_input = TextInput(id=str(btn_no),hint_text=enc_type[btn_no],password=True , pos = (btn_pos[btn_no],0) , size_hint=(0.284,1) ,background_color=(0, 0.2, 0.8, .7),hint_text_color=(1,1,1,0.7),cursor_color=(1,1,1,1),foreground_color=(1,1,1,1), background_normal='atlas://data/images/defaulttheme/button' , background_active='atlas://data/images/defaulttheme/button')
+            text_input = TextInput(id=str(btn_no),hint_text=enc_type[btn_no],password=True , pos = (btn_pos[btn_no],0) , size_hint=(0.290,1) ,background_color=(0, 0.2, 0.8, .7),hint_text_color=(1,1,1,0.7),cursor_color=(1,1,1,1),foreground_color=(1,1,1,1), background_normal='atlas://data/images/defaulttheme/button' , background_active='atlas://data/images/defaulttheme/button' , multiline=False)
             args[3].add_widget(text_input)
         else:    
             args[2].background_color=(0,0.2,0.8,0.5)
@@ -416,11 +418,12 @@ class MainScreen(Screen):
     def copy(self,*args):
         args[1].copy(data=args[0])
 
-class TestApp(App):
+class FinalApp(App):
     def build(self):
         Window.size = (800, 500)
         #Window.clearcolor = (1, 1, 1, 1)
-
+        self.icon = "imgz/ogo_1.png"
+        self.title = "Image Encryption"
         sm = ScreenManager()
         
         main_screen = MainScreen(sm , name='main_screen')
@@ -430,5 +433,5 @@ class TestApp(App):
 
 
 if __name__=="__main__":
-    TestApp().run()
+    FinalApp().run()
 
