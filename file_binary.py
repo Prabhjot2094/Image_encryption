@@ -124,10 +124,19 @@ def enc(enc_type , file_name , key=''):
         #print j,i
 
         z = f.read(bytes_to_read)
+        
         if len(z)!=bytes_to_read:
             #print len(z)
             t1 = bytes_to_read-len(z)
             extra_bytes = len(z)
+            if len(z)==0:
+				print "Inside z==0"
+				last_pixel_col = prev_col
+				last_pixel_row = j
+				print last_pixel_row,last_pixel_col
+				if p_arr!=[0,0,0]:
+					im.putpixel((prev_col,j),(p_arr[0],p_arr[1],p_arr[2]))
+				break
             z+=padding[:t1]
             final_bytes = True
         
@@ -160,7 +169,7 @@ def enc(enc_type , file_name , key=''):
                     x+=1
                     if final_bytes==True:
                         if pixel==t1:
-                            rgb_pos = x-1
+                            #rgb_pos = x-1
                             last_pixel_col = prev_col
                             last_pixel_row = j
                             print last_pixel_row
@@ -254,7 +263,7 @@ def dec(enc_type , enc_file_name , dec_file_name , key):
     t4 = (t1*256)+t2
     k3 = (k1*256)+k2
     
-    print t1,t2,t3,k3
+    print "POS OF LAST PIX = ",t4,k3
    
     i=j=x=d=0
     hex_str = ''
@@ -300,9 +309,12 @@ def dec(enc_type , enc_file_name , dec_file_name , key):
                 decrypted_hex = obj.decrypt(hex_str)
             
             if i==t4 and j==k3:
-                f.write(decrypted_hex[:t3])
-                print "Breaking at ", i, j
-                break
+				if t3==0:
+					f.write(decrypted_hex)
+					break
+				f.write(decrypted_hex[:t3])
+				print "Breaking at ", i, j
+				break
             if d==0 or d==1 or d==2:
                 d+=1
                 print "hex rigth after decryption = ", binascii.hexlify(decrypted_hex)
