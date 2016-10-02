@@ -87,8 +87,17 @@ def get_img_ext(height , im):
 def enc(enc_type , file_name , key=''):
     #sys.exit(10)
     if enc_type=='rsa':
-        (public_key, private_key) = rsa.newkeys(256 , poolsize=2)
-        priv_key = str(private_key.n)+'@'+str(private_key.e)+'@'+str(private_key.d)+'@'+str(private_key.p)+'@'+str(private_key.q)
+        print key
+        if key!='':
+            key = key.replace(", ","@")
+            print len(key)
+            key = key.split("@")
+            public_key = rsa.PublicKey(int(key[0]),int(key[1]))
+
+        else:
+            (public_key, private_key) = rsa.newkeys(256 , poolsize=2)
+            pub_key = str(public_key.n)+'@'+str(public_key.e)
+            priv_key = str(private_key.n)+'@'+str(private_key.e)+'@'+str(private_key.d)+'@'+str(private_key.p)+'@'+str(private_key.q)
         bytes_to_read = 21
         no_of_rgbs = 32
     elif enc_type=='aes' or enc_type=='des':
@@ -227,8 +236,8 @@ def enc(enc_type , file_name , key=''):
     for i in range(prev_col,width):
             im.putpixel((i,height-1),(255,1,231))
     im.save(f_name+".png")
-    if enc_type=='rsa':
-		return priv_key
+    if enc_type=='rsa' and key=='':
+		return [priv_key,pub_key]
     
 
 def dec(enc_type , enc_file_name , dec_file_name , key):
