@@ -85,7 +85,6 @@ def get_img_ext(height , im):
     return ext
 
 def enc(enc_type , file_name , key=''):
-    #sys.exit(10)
     if enc_type=='rsa':
         print key
         if key!='':
@@ -101,8 +100,10 @@ def enc(enc_type , file_name , key=''):
         bytes_to_read = 21
         no_of_rgbs = 32
     elif enc_type=='aes' or enc_type=='des':
-        if enc_type=='des':
+    	if enc_type=='des':
             obj = DES.new(key[:8], DES.MODE_CBC,'\0\0\0\0\0\0\0\0')
+        else:
+            obj = AES.new(key, AES.MODE_CBC, 'This is an IV456')
         bytes_to_read = 16
         no_of_rgbs = 16
 
@@ -153,7 +154,6 @@ def enc(enc_type , file_name , key=''):
             print "Hex just before encryption = ",binascii.hexlify(z)
 
         if enc_type=='aes':
-            obj = AES.new(key, AES.MODE_CBC, 'This is an IV456')
             encrypted_hex = obj.encrypt(z)
         elif enc_type=='rsa':
             encrypted_hex = rsa.encrypt(z,public_key)
@@ -237,8 +237,8 @@ def enc(enc_type , file_name , key=''):
             im.putpixel((i,height-1),(255,1,231))
     im.save(f_name+".png")
     if enc_type=='rsa' and key=='':
-		return [priv_key,pub_key]
-    
+    	print enc_type,"The fucking key is ",key
+    	return [priv_key,pub_key]
 
 def dec(enc_type , enc_file_name , dec_file_name , key):
     if enc_type=='rsa':
@@ -262,6 +262,8 @@ def dec(enc_type , enc_file_name , dec_file_name , key):
     elif enc_type=='aes' or enc_type=='des':
         if enc_type == 'des':
             obj = DES.new(key[:8], DES.MODE_CBC,'\0\0\0\0\0\0\0\0')
+        else:
+            obj = AES.new(key, AES.MODE_CBC, 'This is an IV456')
         bytes_to_read = 16
         no_of_rgbs = 16
 
@@ -306,14 +308,9 @@ def dec(enc_type , enc_file_name , dec_file_name , key):
                 print "hex length before decryption = ", len(binascii.hexlify(hex_str))
             
             if enc_type=='aes':
-                obj = AES.new(key, AES.MODE_CBC, 'This is an IV456')
                 decrypted_hex = obj.decrypt(hex_str)
             elif enc_type=='rsa':
-                try:
-                    decrypted_hex = rsa.decrypt(hex_str,private_key)
-                except:
-                    print "Wrong Key Entered !!!!!"
-                    sys.exit()
+                decrypted_hex = rsa.decrypt(hex_str,private_key)
             elif enc_type=='des':
                 decrypted_hex = obj.decrypt(hex_str)
             
@@ -364,10 +361,12 @@ def encrypt(file_name,keys,toggle_list):
 			r2 = enc(enc_type[pos[1]] , f_name[0]+'.png' , keys[pos[1]])
 			t3=time.time()
 			
-			if pos[1]==1:
+			if pos[0]==1:
 				rsa=r1
-			elif pos[0]==1:
+			elif pos[1]==1:
 				rsa=r2
+			else :
+				rsa =''
 			time_taken=[t2-t1,t3-t2,t3-t1]
 		elif cnt==3:
 			pos = [0,1,2]
@@ -413,8 +412,7 @@ def decrypt(file_name,keys,toggle_list):
 			t2=time.time()
 			dec_file_name = dec(enc_type[pos[0]] , "temp1.png", f_name[0] , keys[pos[0]])
 			t3=time.time()
-
-                        os.remove("temp1.png")
+			os.remove("temp1.png")
 			time_taken=[t2-t1,t3-t2,t3-t1]
 		elif cnt==3:
 			pos = [0,1,2]
