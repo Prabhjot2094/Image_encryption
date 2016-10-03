@@ -70,8 +70,7 @@ class MainScreen(Screen):
         background_image1 = Image(source = 'imgz/background.jpg' , allow_strech=True , size_hint=(1,1) , pos=(-235,0))
         background_image2 = Image(source = 'imgz/background.jpg' , allow_strech=True , size_hint=(1,1) , pos=(-2,0))
         background_image3 = Image(source = 'imgz/background.jpg' , allow_strech=True , size_hint=(1,1) , pos=(500,0))
-        #box_4 = BoxLayout(size_hint=(1,0.2))
-        #btn_dummy = Button()
+
 #------------------------------------Binding Widgets-------------------------------------------------------
         file_name=['']
         btn_file_name.bind(on_release=partial(self.onClick,file_name))
@@ -82,8 +81,8 @@ class MainScreen(Screen):
 
         btn_enc.bind(on_release=partial(self.Encrypt,toggle_list,file_name))
         btn_dec.bind(on_release=partial(self.Decrypt,toggle_list,file_name))
-#-------------------------------------Widgets are added----------------------------------------------------
-    	
+
+#-------------------------------------Widgets are added----------------------------------------------------    	
     	relative_1.add_widget(logo)
     	relative_1.add_widget(btn_file_name)
     	relative_1.add_widget(btn_header_enc)
@@ -97,17 +96,13 @@ class MainScreen(Screen):
         float_2.add_widget(btn_dec)
         float_3.add_widget(dest_img)
 
-        #box_2.add_widget(btn_dummy)
         box_3.add_widget(float_1)
         box_3.add_widget(float_2)
         box_3.add_widget(float_3)
-        
-        #box_4.add_widget(btn_dummy)
 
         box_outermost.add_widget(relative_1)
         box_outermost.add_widget(box_1)
         box_outermost.add_widget(box_2)
-        #box_outermost.add_widget(box_4)
         box_outermost.add_widget(box_3)
         
     	fl.add_widget(background_image2)
@@ -165,35 +160,35 @@ class MainScreen(Screen):
                     popup.add_widget(bx)
                     popup.open()
                     return
-            #print "python file_binary.py 'encrypt#" +args[1][0]+ "#" + json.dumps(keys) + "#" + json.dumps(args[0])+"'"
-            #os.system("python file_binary.py 'encrypt#"+args[1][0]+ "#" + json.dumps(keys) + "#" + json.dumps(args[0])+"'")
+            
             if args[0][1]==1:
             	popup = Popup(background=self.popup_back,background_color = (0,0,0,0.6),title = "Public Key",title_size='17sp', size_hint=(0.28,0.5),separator_color=(1,1,1,0.7))
 
                 bx = BoxLayout(orientation='vertical')
                 
                 submit_key = Button( text = 'Submit',background_color=(0,0.2,0.8,100),background_down=self.popup_back,size_hint=(1,0.2))
-                rsa_key = TextInput(hint_text = "Enter Your Public Key" , font_size='17.2sp',line_spacing=-4 , padding=(12,0) ,password=True, size_hint=(1,1))
+                rsa_key = TextInput(hint_text = "Enter Your Public Key OR Submit an empty field to generate new public and private keys" , font_size='17.2sp',line_spacing=-4 , padding=(12,0) ,password=True, size_hint=(1,1))
                 
                 submit_key.bind(on_release=partial(self.onRsaText,args[0],args[1],keys,popup,rsa_key,'encrypt'))
                 
                 bx.add_widget(rsa_key)
-                bx.add_widget(submit_key)
-                
-                popup.add_widget(bx)
-                
+                bx.add_widget(submit_key)               
+               	popup.add_widget(bx)
+  
                 popup.open()
+            
             else :
 				error_list = file_binary.encrypt(args[1][0] , keys ,args[0])
+				
 				if error_list[1]==1:
 					if args[0][1]==1:
 						print error_list[0]
 						self.displayRsa(error_list[0])
 					f_name = args[1][0].split('.')
 					self.children[0].children[0].children[0].children[0].source = f_name[0]+'.png'
-					print "Timing Array = ",error_list[2]
 					self.getStats(args[1][0],f_name[0]+".png",error_list[2],args[0],"encrypt")
 					self.defaultSet(args[0],args[1])
+				
 				else:
 					self.error_popup(error_list[0])
              
@@ -255,15 +250,11 @@ class MainScreen(Screen):
                 submit_key.bind(on_release=partial(self.onRsaText,args[0],args[1],keys,popup,rsa_key , 'decrypt'))
                 
                 bx.add_widget(rsa_key)
-                bx.add_widget(submit_key)
-                
+                bx.add_widget(submit_key)    
                 popup.add_widget(bx)
                 
                 popup.open()
             else:
-                #dec_file_name = subprocess.check_output([sys.executable, "file_bianry.py","'decrypt#"+args[1][0]+ "#" + json.dumps(keys) + "#" + json.dumps(args[0])+"'" ])
-                #dec_file_name = os.system("python file_binary.py 'decrypt#"+args[1][0]+ "#" + json.dumps(keys) + "#" + json.dumps(args[0])+"'")
-                #print "dec_file_name =",dec_file_name
                 error_list = file_binary.decrypt(args[1][0] , keys ,args[0])
                 if error_list[1]==1:
                     self.children[0].children[0].children[0].children[0].source = error_list[0]
@@ -291,7 +282,6 @@ class MainScreen(Screen):
         
         popup.dismiss()
         
-        #dec_file_name = os.system("python file_binary.py 'decrypt#"+args[1][0]+ "#" + json.dumps(keys) + "#" + json.dumps(args[0])+"'")
         if args[5]=='decrypt':
         	error_list = file_binary.decrypt(args[1][0] , keys ,args[0])
         elif args[5]=='encrypt':
@@ -336,16 +326,16 @@ class MainScreen(Screen):
                 if c.id==str(btn_no):
                     args[3].remove_widget(c)
         
-        print args[0]
-
+    
     def onClick(self,*args):
         popup = Popup(background='imgz/back_blue_1.jpg',background_color = (0,0,0,0.6),title_size='17sp' ,title="Load file",size_hint=(0.8, 0.8),separator_color=(1,1,1,0.7))
         fc = FileChooserIconView(path='/home/john/projects/Image_encryption')
         popup.add_widget(fc)
         popup.open()
         fc.bind(on_submit=partial(self.onSubmit,fc,popup,args[0]))
+    
+    
     def onSubmit(self,*args):
-        print args[0].selection[0]
         file_name = args[0].selection[0]
         args[1].dismiss()
         args[2][0] = file_name
@@ -355,7 +345,6 @@ class MainScreen(Screen):
         if len(file_name)>42:
             btn.font_size='15sp'
        
-        print "Just before button assign,ent"
         btn.valign='middle'
         btn.halign='center'
         btn.text_size = (btn.width,btn.height)
@@ -372,15 +361,16 @@ class MainScreen(Screen):
             text_inputs = self.children[0].children[1].children
             enc_buttons = self.children[0].children[2].children
             
-            print "children of Text Inputs are ",text_inputs
             for c in range(len(text_inputs)):
-                print "Removing text input "
                 self.children[0].children[1].remove_widget(text_inputs[0])
             for c in enc_buttons:
                 c.background_color=(0,0.2,0.8,0.5)
+            
             args[0][0] = 0
             args[0][1] = 0
             args[0][2] = 0
+    
+    
     def getStats(self,*args):
         cipher_list = ["DES","RSA","AES"]
 
@@ -393,11 +383,12 @@ class MainScreen(Screen):
         to_disp = "Input File     :\n    Name - "+inp_file_name+"\n    Size    - "+str(inp_file_size)+" Bytes "
         to_disp += "\n\nOutput File   :\n    Name - "+out_file_name+"\n    Size    - "+str(out_file_size)+" Bytes "
         to_disp += "\n\nTime Taken  : "
+        
         if args[4]=="encrypt" or len(args[2])==2:
             j=0
         else:
             j=2
-        print args
+        
         i=0
         for c in args[3]:
             if c==1:
@@ -410,12 +401,11 @@ class MainScreen(Screen):
 
         to_disp += "\n\nTotal Time    :  "+str(math.ceil(args[2][i]*10000)/10000)+"s"
 
-
-
         popup = Popup(background=self.popup_back,background_color = (0,0,0,0.6),title_size='17sp' ,title="Stats" , size_hint=(0.4,0.65),separator_color=(1,1,1,0.7))
         label = Label(text=to_disp)
         popup.add_widget(label)
         popup.open()
+    
     
     def displayRsa(self,*args):
     	popup_title = "Private Key for RSA                    Public Key for RSA"
@@ -435,8 +425,6 @@ class MainScreen(Screen):
             else:
                 rsa_key += args[0][0][i]
 
-        print rsa_key
-        
         label = TextInput(text = rsa_key,readonly=True,auto_indent=True,strip=True)
 
         btn_copy.bind(on_release=partial(self.copy,rsa_key,label))
@@ -475,19 +463,19 @@ class MainScreen(Screen):
     def copy(self,*args):
         args[1].copy(data=args[0])
 
+
 class FinalApp(App):
     def build(self):
         Window.size = (800, 500)
-        #Window.clearcolor = (1, 1, 1, 1)
-        self.icon = "imgz/ogo_1.png"
+        
         self.title = "Image Encryption"
+        
         sm = ScreenManager()
         
         main_screen = MainScreen(sm , name='main_screen')
+        
         sm.add_widget(main_screen)
-
         return sm
-
 
 if __name__=="__main__":
     FinalApp().run()

@@ -49,7 +49,6 @@ def get_img_ext(height , im):
         rgb = im.getpixel((j,height-1))
         i+=3
         
-        print "Image Extension ===================== ",ext_str,ext_len
         if (len(ext_str)/2)<ext_len:
             diff = ext_len-(len(ext_str)/2)
 
@@ -63,7 +62,6 @@ def get_img_ext(height , im):
                 if len(h)==1:
                     h ='0'+h
                 ext_str+=h 
-
         else:
             break
         j+=1
@@ -97,9 +95,8 @@ def enc(enc_type , file_name , key=''):
     file_size = os.path.getsize(file_name)
     width,height = calc_dim(file_size , enc_type)
 
-    print width,height
     height+=1
-    #sys.exit() 
+    
     im = Image.new("RGB" , (width, height))
     f = open(file_name , 'rb')
 
@@ -111,34 +108,23 @@ def enc(enc_type , file_name , key=''):
     s=0
     while 1:
         s+=1
-       # print s
-        ''' i+=1
-        if i>bytes_to_read3:
-            i=i%bytes_to_read3
-            j+=1
-        '''
-        #print j,i
-
+        
         z = f.read(bytes_to_read)
         
         if len(z)!=bytes_to_read:
-            #print len(z)
             t1 = bytes_to_read-len(z)
             extra_bytes = len(z)
             if len(z)==0:
-				print "Inside z==0"
-				last_pixel_col = prev_col
-				last_pixel_row = j
-				print last_pixel_row,last_pixel_col
-				if p_arr!=[0,0,0]:
-					im.putpixel((prev_col,j),(p_arr[0],p_arr[1],p_arr[2]))
-				break
+                print "Inside z==0"
+                last_pixel_col = prev_col
+                last_pixel_row = j
+                print last_pixel_row,last_pixel_col
+                if p_arr!=[0,0,0]:
+                        im.putpixel((prev_col,j),(p_arr[0],p_arr[1],p_arr[2]))
+                break
             z+=padding[:t1]
             final_bytes = True
         
-        if s==1 or s==2 or s==3:
-            print "Hex just before encryption = ",binascii.hexlify(z)
-
         if enc_type=='aes':
             encrypted_hex = obj.encrypt(z)
         elif enc_type=='rsa':
@@ -148,10 +134,6 @@ def enc(enc_type , file_name , key=''):
         
         encrypted_hex = binascii.hexlify(encrypted_hex)
         
-        if s==1 or s==2 or s==3 or final_bytes==True:
-            print "Hex after encryption = ",encrypted_hex
-            print "Hex length after encryption = ",len(encrypted_hex)
-
         rgb_arr = []
 
         t=0
@@ -164,7 +146,6 @@ def enc(enc_type , file_name , key=''):
                     x+=1
                     if final_bytes==True:
                         if pixel==t1:
-                            #rgb_pos = x-1
                             last_pixel_col = prev_col
                             last_pixel_row = j
                             print last_pixel_row
@@ -218,28 +199,28 @@ def enc(enc_type , file_name , key=''):
             print p_arr
             im.putpixel((prev_col,height-1),(p_arr[0],p_arr[1],p_arr[2]))
             prev_col+=1
+    
     f.close() 
+    
     for i in range(prev_col,width):
             im.putpixel((i,height-1),(255,1,231))
+    
     im.save(f_name+".png")
+    
     if enc_type=='rsa' and key=='':
-    	print enc_type,"The fucking key is ",key
     	return [priv_key,pub_key]
 
 def dec(enc_type , enc_file_name , dec_file_name , key):
     if enc_type=='rsa':
         key = key.replace(", ","@")
-        print len(key)
-        #sys.exit()
         key = key.split("@")
         private_key = rsa.PrivateKey(int(key[0]),int(key[1]),int(key[2]),int(key[3]),int(key[4]))
-    print enc_file_name
+    
     im = Image.open(enc_file_name)
     width,height = im.size
     ext = get_img_ext(height , im)
 
     dec_file_name += ext
-    print dec_file_name
     f = open(dec_file_name,'wb')
     
     if enc_type=='rsa':
@@ -256,12 +237,9 @@ def dec(enc_type , enc_file_name , dec_file_name , key):
     t1,t2,t3 = im.getpixel((0,height-1))
     k1,k2 = im.getpixel((1,height-1))[:2]
 
-
     t4 = (t1*256)+t2
     k3 = (k1*256)+k2
     
-    print "POS OF LAST PIX = ",t4,k3
-   
     i=j=x=d=0
     hex_str = ''
     rgb_arr = []
@@ -289,10 +267,6 @@ def dec(enc_type , enc_file_name , dec_file_name , key):
             x%=no_of_rgbs
             hex_str = format_data(hex_str)
             
-            if d==0 or d==1 or d==2 or (i==t4 and j==k3):
-                print "hex before decryption = ", binascii.hexlify(hex_str)
-                print "hex length before decryption = ", len(binascii.hexlify(hex_str))
-            
             if enc_type=='aes':
                 decrypted_hex = obj.decrypt(hex_str)
             elif enc_type=='rsa':
@@ -301,22 +275,23 @@ def dec(enc_type , enc_file_name , dec_file_name , key):
                 decrypted_hex = obj.decrypt(hex_str)
             
             if i==t4 and j==k3:
-				if t3==0:
-					f.write(decrypted_hex)
-					break
-				f.write(decrypted_hex[:t3])
-				print "Breaking at ", i, j
-				break
-            if d==0 or d==1 or d==2:
-                d+=1
-                print "hex rigth after decryption = ", binascii.hexlify(decrypted_hex)
+                if t3==0:
+                        f.write(decrypted_hex)
+                        break
+                f.write(decrypted_hex[:t3])
+                print "Breaking at ", i, j
+                break
+            
             f.write(decrypted_hex[:bytes_to_read])
             hex_str = ''
+        
         i+=1
         if i>=width:
             i%=width
             j+=1
+    
     f.close()
+    
     return dec_file_name
 
 def encrypt(file_name,keys,toggle_list):
@@ -339,8 +314,6 @@ def encrypt(file_name,keys,toggle_list):
 			time_taken=[t2-t1,t2-t1]
 		elif cnt==2:
 			pos = [i for i, x in enumerate(toggle_list) if x == 1]
-			print keys[pos[1]],keys[pos[0]]
-			print enc_type[pos[0]],enc_type[pos[1]]
 			t1=time.time()
 			r1 = enc(enc_type[pos[0]] , file_name ,keys[pos[0]])
 			t2=time.time()
@@ -367,8 +340,10 @@ def encrypt(file_name,keys,toggle_list):
 			time_taken=[t2-t1,t3-t2,t4-t3,t4-t1]
 		print rsa
 		return [rsa,1,time_taken]
+	
 	except Exception as e:
 		return [e[0],0]
+
 def decrypt(file_name,keys,toggle_list):
 	try:
 		enc_type = ["des","rsa","aes"]
@@ -414,6 +389,7 @@ def decrypt(file_name,keys,toggle_list):
 			os.remove("temp2.png")
 			time_taken=[t2-t1,t3-t2,t4-t3,t4-t1]
 		return [dec_file_name,1,time_taken]
+	
 	except Exception as e:
 		rsa_error = "invalid literal for"
 		temp = rsa_error in str(e)
@@ -422,6 +398,7 @@ def decrypt(file_name,keys,toggle_list):
 			return ["Invalid Private key for RSA !!",0]
 		else:
 			return [e[0],0]
+
 def main(argv):
 	argv = argv[0].split('#')
 	print argv[0]
@@ -440,30 +417,3 @@ def main(argv):
 if __name__=='__main__':
 	if sys.argv[1:]:
 		main(sys.argv[1:])
-	"""t1 = time.time()
-	password = get_hash("password")
-	enc('aes' ,'test1.png' , password)
-	enc('des' ,'test1.png' , password)
-	dec('des' ,'test1.png' ,'face1' , password)
-	dec('aes' ,'face1.png' ,'fac2' , password)
-	enc_dec = raw_input('Enter\ne : Encryption\nd : Decryption\n')
-
-    priv_key = ''
-    if enc_dec=='e':
-        file_name = raw_input('Enter the file name\n')
-        enc_type = raw_input('Enter the Type of Encryption: aes , des , rsa\n')
-        if enc_type!='rsa':
-            priv_key = raw_input('Enter the desired  encrytion key : \n')
-            priv_key = get_hash(priv_key)
-        enc(enc_type , file_name , priv_key)
-
-    elif enc_dec=='d':
-        file_name = raw_input('Enter the file name\n')
-        enc_type = raw_input('Enter encryption applied on the image: aes , des , rsa\n')
-        priv_key = raw_input('Enter the key : \n')
-
-        if enc_type!='rsa':
-            priv_key = get_hash(priv_key)
-        f_name = file_name.split('.')[0]
-        dec(enc_type , file_name , f_name , priv_key)
-    sys.exit()"""
