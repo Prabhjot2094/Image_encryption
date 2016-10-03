@@ -133,18 +133,24 @@ class MainScreen(Screen):
             
             for c in children:
                 if c.id=='0':
-                    if c.text=='':
+                    if len(c.text)<6:
                         popup.title = "Error !!" 
-                        popup_label.text="Please Enter a password for Des encryption OR deselect it !!"
+                        if c.text=='':
+                            popup_label.text="Please Enter a password for Des encryption OR deselect it !!"
+                        else:
+                            popup_label.text="Password should have atleast 6 characters !!"
                         bx.add_widget(popup_label)
                         popup.add_widget(bx)
                         popup.open()
                         return
                     keys[int(c.id)] = c.text
                 elif c.id=='2':
-                    if c.text=='':
+                    if len(c.text)<6:
                         popup.title = "Error !!" 
-                        popup_label.text="Please Enter a password for Aes encryption OR deselect it !!"
+                        if c.text=='':
+                            popup_label.text="Please Enter a password for Aes encryption OR deselect it !!"
+                        else:
+                            popup_label.text="Password should have atleast 6 characters !!"
                         bx.add_widget(popup_label)
                         popup.add_widget(bx)
                         popup.open()
@@ -178,19 +184,22 @@ class MainScreen(Screen):
                 popup.open()
             
             else :
-				error_list = file_binary.encrypt(args[1][0] , keys ,args[0])
-				
-				if error_list[1]==1:
-					if args[0][1]==1:
-						print error_list[0]
-						self.displayRsa(error_list[0])
-					f_name = args[1][0].split('.')
-					self.children[0].children[0].children[0].children[0].source = f_name[0]+'.png'
-					self.getStats(args[1][0],f_name[0]+".png",error_list[2],args[0],"encrypt")
-					self.defaultSet(args[0],args[1])
-				
-				else:
-					self.error_popup(error_list[0])
+                error_list = file_binary.encrypt(args[1][0] , keys ,args[0])
+                
+                if error_list[1]==1:
+                        if args[0][1]==1:
+                                print error_list[0]
+                                self.displayRsa(error_list[0])
+                        f_name = args[1][0].split('.')
+
+                        f_name[0] = f_name[0]+'_enc'
+                        self.children[0].children[0].children[0].children[0].source = f_name[0]+'.png'
+
+                        self.getStats(args[1][0],f_name[0]+".png",error_list[2],args[0],"encrypt")
+                        self.defaultSet(args[0],args[1])
+                
+                else:
+                        self.error_popup(error_list[0])
              
     def Decrypt(self,*args):
             popup = Popup(background=self.popup_back,background_color = (0,0,0,0.6),title_size='17sp',separator_color=(1,1,1,0.7) , size_hint=(0.555,0.2))
@@ -211,18 +220,24 @@ class MainScreen(Screen):
 
             for c in children:
                 if c.id=='0':
-                    if c.text=='':
-                        popup.title = "Error !!" 
-                        popup_label.text="Please Enter a password for Des encryption OR deselect it !!"
+                    if len(c.text)<6:
+                        popup.title = "Error !!"
+                        if c.text=='':
+                            popup_label.text="Please Enter a password for Des encryption OR deselect it !!"
+                        else:
+                            popup_label.text="Password should have atleast 6 characters !!"
                         bx.add_widget(popup_label)
                         popup.add_widget(bx)
                         popup.open()
                         return
                     keys[int(c.id)] = c.text
                 elif c.id=='2':
-                    if c.text=='':
+                    if len(c.text)<6:
                         popup.title = "Error !!" 
-                        popup_label.text="Please Enter a password for Aes encryption OR deselect it !!"
+                        if c.text=='':
+                            popup_label.text="Please Enter a password for Aes encryption OR deselect it !!"
+                        else:
+                            popup_label.text="Password should have atleast 6 characters !!"
                         bx.add_widget(popup_label)
                         popup.add_widget(bx)
                         popup.open()
@@ -265,8 +280,9 @@ class MainScreen(Screen):
                     self.error_popup(error_list[0])
 
     def error_popup(self,e):
-        popup = Popup(background=self.popup_back,background_color = (0,0,0,0.6),title = "Error !!",title_size='17sp',separator_color=(1,1,1,0.7) , content=Label(text=e) , size_hint=(0.5,0.5))
+        popup = Popup(background=self.popup_back,background_color = (0,0,0,0.6),title = "Error !!",title_size='17sp',separator_color=(1,1,1,0.7) , content=Label(text=str(e)) , size_hint=(0.5,0.5))
         popup.open()
+    
     def onRsaText(self,*args):
         keys = args[2]
         popup = args[3]
@@ -297,9 +313,9 @@ class MainScreen(Screen):
 						print error_list[0]
 						self.displayRsa(error_list[0])
 				f_name = args[1][0].split('.')
-				self.children[0].children[0].children[0].children[0].source = f_name[0]+'.png'
+				self.children[0].children[0].children[0].children[0].source = f_name[0]+'_enc.png'
 				print "Timing Array = ",error_list[2]
-				self.getStats(args[1][0],f_name[0]+".png",error_list[2],args[0],"encrypt")
+				self.getStats(args[1][0],f_name[0]+"_enc.png",error_list[2],args[0],"encrypt")
 			self.defaultSet(args[0],args[1])
         else:
             self.error_popup(error_list[0])
@@ -336,6 +352,8 @@ class MainScreen(Screen):
     
     
     def onSubmit(self,*args):
+        if len(args[0].selection)==0:
+            return
         file_name = args[0].selection[0]
         args[1].dismiss()
         args[2][0] = file_name
@@ -384,21 +402,23 @@ class MainScreen(Screen):
         to_disp += "\n\nOutput File   :\n    Name - "+out_file_name+"\n    Size    - "+str(out_file_size)+" Bytes "
         to_disp += "\n\nTime Taken  : "
         
-        if args[4]=="encrypt" or len(args[2])==2:
-            j=0
-        else:
-            j=2
+        args[4]=="encrypt" or len(args[2])==2
+        j=0
+       # else:
+       #     j=2
         
         i=0
+        todisp=''
         for c in args[3]:
             if c==1:
-                to_disp += "\n    "+cipher_list[j]+" -  "+str(math.ceil(args[2][i]*10000)/10000)+"s"
+                if args[4]=="encrypt":
+                    todisp += "\n    "+cipher_list[j]+" -  "+str(math.ceil(args[2][i]*10000)/10000)+"s"
+                else:
+                    todisp = "\n    "+cipher_list[j]+" -  "+str(math.ceil(args[2][i]*10000)/10000)+"s"+todisp
                 i+=1
-            if args[4]=="encrypt" or len(args[2])==2:
-                j+=1
-            else:
-                j-=1
-
+            j+=1
+        
+        to_disp += todisp
         to_disp += "\n\nTotal Time    :  "+str(math.ceil(args[2][i]*10000)/10000)+"s"
 
         popup = Popup(background=self.popup_back,background_color = (0,0,0,0.6),title_size='17sp' ,title="Stats" , size_hint=(0.4,0.65),separator_color=(1,1,1,0.7))

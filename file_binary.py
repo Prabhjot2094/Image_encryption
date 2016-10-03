@@ -68,13 +68,14 @@ def get_img_ext(height , im):
     ext = binascii.unhexlify(ext_str)
     return ext
 
-def enc(enc_type , file_name , key=''):
+def enc(enc_type , file_name , key='' , level=1):
     if enc_type=='rsa':
         print key
         if key!='':
             key = key.replace(", ","@")
-            print len(key)
             key = key.split("@")
+            if len(key)!=2:
+				raise Exception("Invalid Public Key !!")
             public_key = rsa.PublicKey(int(key[0]),int(key[1]))
 
         else:
@@ -128,6 +129,7 @@ def enc(enc_type , file_name , key=''):
         if enc_type=='aes':
             encrypted_hex = obj.encrypt(z)
         elif enc_type=='rsa':
+            print "Encryption type dobne = ",enc_type
             encrypted_hex = rsa.encrypt(z,public_key)
         elif enc_type=='des':
             encrypted_hex = obj.encrypt(z)
@@ -204,9 +206,14 @@ def enc(enc_type , file_name , key=''):
     
     for i in range(prev_col,width):
             im.putpixel((i,height-1),(255,1,231))
-    
-    im.save(f_name+".png")
-    
+	
+    print "Ext == ",ext
+    if level==1:
+    	im.save(f_name+"_enc"+".png")
+    else:
+		im.save(f_name+".png")
+
+    print "Encryption done = ",enc_type
     if enc_type=='rsa' and key=='':
     	return [priv_key,pub_key]
 
@@ -214,6 +221,8 @@ def dec(enc_type , enc_file_name , dec_file_name , key):
     if enc_type=='rsa':
         key = key.replace(", ","@")
         key = key.split("@")
+        if len(key)!=5:
+			raise Exception("Invalid Private Key !!")
         private_key = rsa.PrivateKey(int(key[0]),int(key[1]),int(key[2]),int(key[3]),int(key[4]))
     
     im = Image.open(enc_file_name)
@@ -270,6 +279,7 @@ def dec(enc_type , enc_file_name , dec_file_name , key):
             if enc_type=='aes':
                 decrypted_hex = obj.decrypt(hex_str)
             elif enc_type=='rsa':
+            	print "Encryption type dobne = ",enc_type
                 decrypted_hex = rsa.decrypt(hex_str,private_key)
             elif enc_type=='des':
                 decrypted_hex = obj.decrypt(hex_str)
@@ -289,7 +299,6 @@ def dec(enc_type , enc_file_name , dec_file_name , key):
         if i>=width:
             i%=width
             j+=1
-    
     f.close()
     
     return dec_file_name
@@ -317,7 +326,7 @@ def encrypt(file_name,keys,toggle_list):
 			t1=time.time()
 			r1 = enc(enc_type[pos[0]] , file_name ,keys[pos[0]])
 			t2=time.time()
-			r2 = enc(enc_type[pos[1]] , f_name[0]+'.png' , keys[pos[1]])
+			r2 = enc(enc_type[pos[1]] , f_name[0]+'_enc.png' , keys[pos[1]],2)
 			t3=time.time()
 			
 			if pos[0]==1:
@@ -332,9 +341,9 @@ def encrypt(file_name,keys,toggle_list):
 			t1=time.time()
 			enc(enc_type[pos[0]] , file_name ,keys[pos[0]])
 			t2=time.time()
-			rsa = enc(enc_type[pos[1]] , f_name[0]+'.png' , keys[pos[1]])
+			rsa = enc(enc_type[pos[1]] , f_name[0]+'_enc.png' , keys[pos[1]],2)
 			t3=time.time()
-			enc(enc_type[pos[2]] , f_name[0]+'.png' , keys[pos[2]])
+			enc(enc_type[pos[2]] , f_name[0]+'_enc.png' , keys[pos[2]],3)
 			t4=time.time()
 			
 			time_taken=[t2-t1,t3-t2,t4-t3,t4-t1]
@@ -353,8 +362,11 @@ def decrypt(file_name,keys,toggle_list):
 		
 		f_name = file_name.split('.')
 
-		cnt = toggle_list.count(1)
+		if f_name[0][-4:]=='_enc':
+			f_name[0] = f_name[0][:-4]
 
+		cnt = toggle_list.count(1)
+		
 		
 		if cnt==1:
 			pos = toggle_list.index(1)
@@ -374,7 +386,7 @@ def decrypt(file_name,keys,toggle_list):
 			dec_file_name = dec(enc_type[pos[0]] , "temp1.png", f_name[0] , keys[pos[0]])
 			t3=time.time()
 			os.remove("temp1.png")
-			time_taken=[t2-t1,t3-t2,t3-t1]
+			time_taken=[t3-t2,t2-t1,t3-t1]
 		elif cnt==3:
 			pos = [0,1,2]
 			t1=time.time()
@@ -384,10 +396,11 @@ def decrypt(file_name,keys,toggle_list):
 			t3=time.time()
 			dec_file_name =dec(enc_type[pos[0]] ,"temp2.png", f_name[0], keys[0])
 			t4=time.time()
-			
+		
 			os.remove("temp1.png")
 			os.remove("temp2.png")
-			time_taken=[t2-t1,t3-t2,t4-t3,t4-t1]
+			time_taken=[t4-t3,t3-t2,t2-t1,t4-t1]
+		
 		return [dec_file_name,1,time_taken]
 	
 	except Exception as e:
