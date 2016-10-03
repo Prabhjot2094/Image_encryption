@@ -19,7 +19,6 @@ def get_hash(password):
     return hash_hex[:16]
 
 def format_data(hex_str):
-    #print hex_str
     hex_str = hex_str.replace("0x",'')
     hex_str = binascii.unhexlify(hex_str)
     return hex_str
@@ -41,21 +40,6 @@ def calc_dim(file_size , enc_type):
         x=y=int(t2)
     return x,y
 
-def calc_dim_rsa(file_size):
-    file_size = file_size*no_of_rgbs/bytes_to_read
-    added_bytes = file_size%3
-    t1 = file_size/3
-    t2 = pow(t1,0.5)
-    t3 = int(t2)
-
-    print "shortage = ", added_bytes
-    if t2-t3!=0:
-        x = t3+2
-        y = t3+1
-    else:
-        x=y=t2
-    return x,y
-
 def get_img_ext(height , im):
     ext_len,e1,e2 = im.getpixel((2,height-1))
     ext_str = hex(e1)[2:]+hex(e2)[2:]
@@ -64,22 +48,24 @@ def get_img_ext(height , im):
     while 1:
         rgb = im.getpixel((j,height-1))
         i+=3
-        if i>ext_len-2:
-            diff = i-ext_len+2
-            print "diff = " , diff
-            for val in range(diff+1):
+        
+        print "Image Extension ===================== ",ext_str,ext_len
+        if (len(ext_str)/2)<ext_len:
+            diff = ext_len-(len(ext_str)/2)
+
+            if diff>3:
+                counter=3
+            else:
+                counter=diff
+            for val in range(counter):
                 print "val = ",val
                 h = hex(rgb[val])[2:]
                 if len(h)==1:
                     h ='0'+h
                 ext_str+=h 
-            break
+
         else:
-            for t in range(3):
-                h = hex(rgb[t])[2:]
-                if len(h)==1:
-                    h ='0'+h
-                ext_str+=h
+            break
         j+=1
     ext = binascii.unhexlify(ext_str)
     return ext
