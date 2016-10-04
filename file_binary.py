@@ -34,7 +34,7 @@ def calc_dim(file_size , enc_type):
 
     print "shortage = ", added_bytes
     if t2-t3!=0:
-        x = t3+2
+        x = t3+1
         y = t3+1
     else:
         x=y=int(t2)
@@ -75,7 +75,9 @@ def enc(enc_type , file_name , key='' , level=1):
             key = key.replace(", ","@")
             key = key.split("@")
             if len(key)!=2:
-				raise Exception("Invalid Public Key !!")
+		raise Exception("Invalid Public Key !!")
+        #   elif len(key[0])!=80 or len(key[1]!=5):
+	#	raise Exception("Invalid Public Key !!")
             public_key = rsa.PublicKey(int(key[0]),int(key[1]))
 
         else:
@@ -222,7 +224,7 @@ def dec(enc_type , enc_file_name , dec_file_name , key):
         key = key.replace(", ","@")
         key = key.split("@")
         if len(key)!=5:
-			raise Exception("Invalid Private Key !!")
+	    raise Exception("Invalid Private Key !!")
         private_key = rsa.PrivateKey(int(key[0]),int(key[1]),int(key[2]),int(key[3]),int(key[4]))
     
     im = Image.open(enc_file_name)

@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
+from kivy.config import Config
+Config.set('graphics','resizable',0)
+
 import math
 import subprocess
 import sys
 import warnings
-from kivy.config import Config
-Config.set('graphics','resizable',0)
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen,FadeTransition
@@ -31,7 +32,6 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.checkbox import CheckBox
 from kivy.core.window import Window
 import file_binary
-import json
 
 class MainScreen(Screen):
     def __init__(self,sm,**kwargs):
@@ -345,7 +345,7 @@ class MainScreen(Screen):
     
     def onClick(self,*args):
         popup = Popup(background='imgz/back_blue_1.jpg',background_color = (0,0,0,0.6),title_size='17sp' ,title="Load file",size_hint=(0.8, 0.8),separator_color=(1,1,1,0.7))
-        fc = FileChooserIconView(path='/home/john/projects/Image_encryption')
+        fc = FileChooserIconView()
         popup.add_widget(fc)
         popup.open()
         fc.bind(on_submit=partial(self.onSubmit,fc,popup,args[0]))
