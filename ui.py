@@ -395,8 +395,11 @@ class MainScreen(Screen):
         inp_file_size = os.path.getsize(args[0])
         out_file_size = os.path.getsize(args[1])
 
-        inp_file_name = args[0].split('/')[-1]
-        out_file_name = args[1].split('/')[-1]
+        splitter = '\\'
+        if os.name=='posix':
+            splitter = '/'
+        inp_file_name = args[0].split('\\')[-1]
+        out_file_name = args[1].split('\\')[-1]
 
         to_disp = "Input File     :\n    Name - "+inp_file_name+"\n    Size    - "+str(inp_file_size)+" Bytes "
         to_disp += "\n\nOutput File   :\n    Name - "+out_file_name+"\n    Size    - "+str(out_file_size)+" Bytes "
